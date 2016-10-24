@@ -9,7 +9,7 @@
 
 // Function declarations -- TODO: later to be added into header
 double vasicekDescritize(double r0, double alpha, double beta, double sigma);
-
+double vasicekYield(double r1, double alpha, double beta, double sigma, double tau);
 
 int main()
 {
@@ -64,15 +64,15 @@ int main()
 
 	// we want to get an array to compare it with crrntMonthMrktData
 	// Initialize r0 to a given value;
-	double r0 = 0.0001;
+	double r0 = 0.0006;
 
 	// Initialize 3 random values for mean reversion rate :	    alpha
 									  // long term mean :		beta
 									  // volatility : 			sigma
- // These values should be taken as input argument from DE Algorithm
-	double alpha = 1.0;
-	double beta = 2.0;
-	double sigma = 3.0;
+ // TODO: Take the values from DE algorithm
+	double alpha = 3.0;
+	double beta = 0.0035;
+	double sigma = 0.5;
 
 	// Use Monte Carlo idea for vasicek/risklab Descritization to calculate r1
 	// Here we call the vasicekDescritize Function with alpha, beta, sigma, r0 as inputs
@@ -84,7 +84,7 @@ int main()
 	const int scenarioCount = 20; // should be eventually 10000
 	std::array<double,scenarioCount> r1;
 	// here we call the vasicekDescritize or risklabDescritize Function to get the short rates r1
-	// TODO: take out of loop vectorize
+	// TODO: take out of loop and vectorize instead
 	for(int i = 0; i < scenarioCount; i++)
 	{
 		r1[i] = vasicekDescritize(r0,alpha,beta,sigma);
@@ -102,22 +102,30 @@ int main()
 	{
 		for (int j = 0; j < maturityCount; j++)
 		{
-			//y[i][j] = vasicekYield()
+			y[i][j] = vasicekYield(r1[i], alpha, beta, sigma, tau[j]);
 		}
 	}
-
 	// now we average the matrix for each maturity and we get our final model yield for the current month;
 	// auto crrntMonthMdlData = new double[1 * maturityCount];
 	double sum = 0.0;
+	std::array<double, maturityCount> crrntMonthMdlData;
+
 	for (int j = 0; j < maturityCount; j++)
 	{
 		for(int i = 0; i < scenarioCount; i++)
 		{
-			//sum += y[i][j]; // look for eigen matrix for 2D
+			sum += y[i][j]; // TODO: look for eigen matrix for 2D
 		}
-		// nextMonthYield[j] = sum/scenarioCount;
-		// sum = 0.0;
+		crrntMonthMdlData[j] = sum/scenarioCount;
+		sum = 0.0;
 	}
+
+	for (int j = 0; j < maturityCount; j++)
+	{
+		std::cout << "Model: " <<  crrntMonthMdlData[j] ;
+		std::cout << "\t Market:" <<  crrntMonthMrktData[j] << std::endl;
+	}
+
 
 	// now that we have this average we can compare it with crrntMonthMrktData which is e.g. Jan. 2015;
 	double error = 0.0;
@@ -151,4 +159,19 @@ double vasicekDescritize(double r0, double alpha, double beta, double sigma)
 		delta_r = alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomVariable;
 
 		return r0 + delta_r;
+}
+
+double vasicekYield(double r1, double alpha, double beta, double sigma, double tau)
+{
+		double yield;
+		double A,Apart,B,bondPrice;
+
+		B = (1-std::exp(-alpha*tau))/alpha;
+		Apart = std::exp((B - tau)*(beta - (std::pow(sigma,2)/(2*std::pow(alpha, 2)))));
+		A = Apart - std::pow(sigma,2)*std::pow(alpha,2)/(4*alpha);
+		bondPrice = A*std::exp(-r1*B);
+
+		yield = (std::pow(-tau,-1))*std::log(bondPrice);
+
+		return yield;
 }
