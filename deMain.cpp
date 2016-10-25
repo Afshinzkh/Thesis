@@ -33,7 +33,7 @@ int main()
     // to get random values for model Parameters e.g. alpha, beta, sigma
     // Upper and Lower bounds for them are also defined here
     std::array<double, 3> upperBound = {12.0, 10000, 100};
-    std::array<double, 3> lowerBound = {0.0, -1, 0.0};
+    std::array<double, 3> lowerBound = {0.0, 0.0, 0.0};
 
     std::random_device rd;
 	 	std::mt19937 gen(rd());
@@ -194,9 +194,21 @@ int main()
       finBeta += P[i][1];
       finSigma += P[i][2];
     }
-    std::cout << "final alpha:" << finAlpha/NP <<std::endl;
-    std::cout << "final beta:" << finBeta/NP <<std::endl;
-    std::cout << "final sigma:" << finSigma/NP <<std::endl;
+    finAlpha = finAlpha/NP;
+    finBeta = finBeta/NP;
+    finSigma = finSigma/NP;
 
+    std::cout << "final alpha:" <<  finAlpha <<std::endl;
+    std::cout << "final beta:" << finBeta <<std::endl;
+    std::cout << "final sigma:" << finSigma <<std::endl;
+
+    // JUST A TEST TO GET THE FINAL YIELDS
+    double r1 = vasicekDescritize(0.0006, finAlpha, finBeta, finSigma);
+    std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
+    std::array<double,9> y;
+    for (size_t i = 0; i < 9; i++) {
+      y[i] = vasicekYield(r1, finAlpha, finBeta, finSigma, tau[i]);
+      std::cout << "y for maturity: "  << tau[i] << "\t is: \t" << y[i] << std::endl;
+    }
     // TODO: get return values from deMain as a double array
 }

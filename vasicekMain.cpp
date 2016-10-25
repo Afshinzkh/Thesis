@@ -165,7 +165,7 @@ double vasicekMode(double alpha, double beta, double sigma)
 	{
 		error += std::pow((crrntMonthMdlData[i] - crrntMonthMrktData[i]),2) ;
 	}
-	error = std::sqrt(error/maturityCount);
+	error = error/maturityCount;
 
 	// check the error
 	// if (error < tolerance)
@@ -186,11 +186,10 @@ double vasicekDescritize(double r0, double alpha, double beta, double sigma)
 		double deltaT = 1.0/12.0;
 		std::random_device rd;
 	 	std::mt19937 gen(rd());
-		long double precision = 0.00000001;
-	 	std::normal_distribution<> d(precision,1.0 - precision);
+	 	std::normal_distribution<> d(0.0,1.0);
 		long double randomVariable = d(gen);
 		// make delta_r with one step deltaT = 1/12;
-		delta_r = alpha * (beta - r0) * deltaT + sigma * std::sqrt(r0) * randomVariable;
+		delta_r = alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomVariable;
 
 		return r0 + delta_r;
 }
