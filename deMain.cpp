@@ -32,8 +32,8 @@ int main()
     // Define the Random Generator here
     // to get random values for model Parameters e.g. alpha, beta, sigma
     // Upper and Lower bounds for them are also defined here
-    std::array<double, 3> upperBound = {12.0, 1000000, 1000000};
-    std::array<double, 3> lowerBound = {0.0, -1000000, 0.0};
+    std::array<double, 3> upperBound = {12.0, 10000, 100};
+    std::array<double, 3> lowerBound = {0.0, -1, 0.0};
 
     std::random_device rd;
 	 	std::mt19937 gen(rd());
@@ -61,12 +61,14 @@ int main()
     // }
 
     // Define Tolerance for Error
-    double tol = 0.1;
+    double tol = 0.0001;
     double avgError = 1.0;
-
+    int maxIter = 100;
+    int iter = 0;
+    double newError = 2.0;
     int loopCount = 0;
     // The loop of DE Starts Here
-    while (tol < avgError)
+    while (tol < avgError && iter < maxIter)
     {
         // Calculate the Vasicek/risklab Error for each of these populations
         // input alpha, beta, sigma; output : error;
@@ -84,21 +86,8 @@ int main()
         loopCount++;
         std::cout << "Average Error for Calculation loop :" << loopCount;
         std::cout << "\t is : " << avgError << std::endl;
-        if(avgError < tol)
-        {
 
-          double finAlpha, finBeta, finSigma;
-          for(int i = 0; i < NP; i++)
-          {
-            finAlpha += P[i][0];
-            finBeta += P[i][1];
-            finSigma += P[i][2];
-          }
-          std::cout << "final alpha:" << finAlpha/NP <<std::endl;
-          std::cout << "final beta:" << finBeta/NP <<std::endl;
-          std::cout << "final sigma:" << finSigma/NP <<std::endl;
-        }
-        // std::cout << "Press Enter" << std::endl;
+          // std::cout << "Press Enter" << std::endl;
         // getchar();
 
         // Do the MUtation Stage as follows
@@ -173,7 +162,7 @@ int main()
 
         // Now you can compare the Error and if the error of one crossover population
         // is less than the error of one original population you copy that
-        // sum = 0.0;
+        //  sum = 0.0;
         for(int i = 0; i < NP; i++)
         {
              if (crError[i] < pError [i])
@@ -184,19 +173,30 @@ int main()
               //  sum += crError[i];
             }
             // else
-            //   sum += pError[i];
+            //  sum += pError[i];
         }
-        // double newError = sum/NP;
+        //  newError = sum/NP;
         // // So with this new P you can again check the error and go ahead and repeat
         // // but before check if we are stuck
-        // if (std::abs(newError - avgError) < 0.00001){
+        // if (std::abs(newError - avgError) == 0){
         //   std::cout << "Average Error for Calculation loop :" << loopCount+1;
         //   std::cout << "\t is : " << avgError << std::endl;
         //   std::cout << "no good result :( " << std::endl;
         //   break;
         // }
+        iter++;
 
     }
+    double finAlpha, finBeta, finSigma;
+    for(int i = 0; i < NP; i++)
+    {
+      finAlpha += P[i][0];
+      finBeta += P[i][1];
+      finSigma += P[i][2];
+    }
+    std::cout << "final alpha:" << finAlpha/NP <<std::endl;
+    std::cout << "final beta:" << finBeta/NP <<std::endl;
+    std::cout << "final sigma:" << finSigma/NP <<std::endl;
 
     // TODO: get return values from deMain as a double array
 }

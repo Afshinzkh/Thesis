@@ -72,8 +72,11 @@ double vasicekMode(double alpha, double beta, double sigma)
 	// and put this into an array called crrntMonthMrktData with size of [1 * maturityCount]
 	std::array<double,9> crrntMonthMrktData;
 	crrntMonthMrktData = mrktData[11];
-	// std::cout << "data[5] is :" << crrntMonthMrktData[4] << std::endl;
 
+	// for (size_t i = 0; i < 9; i++) {
+	// 	 std::cout << "current data is :" << crrntMonthMrktData[i] << std::endl;
+	// }
+	// getchar();
 	// we want to get an array to compare it with crrntMonthMrktData
 	// Initialize r0 to a given value;
 	double r0 = 0.0006;
@@ -98,14 +101,14 @@ double vasicekMode(double alpha, double beta, double sigma)
 	// here we call the vasicekDescritize or risklabDescritize Function
 	//  to get the short rates r1
 	// TODO: take out of loop and vectorize instead
-	std::array < double, scenarioCount> alphaArray;
-	std::array < double, scenarioCount> betaArray;
-	std::array < double, scenarioCount> sigmaArray;
-	std::array < double, scenarioCount> r0Array;
-	alphaArray.fill(alpha);
-	betaArray.fill(beta);
-	sigmaArray.fill(sigma);
-	r0Array.fill(r0);
+	// std::array < double, scenarioCount> alphaArray;
+	// std::array < double, scenarioCount> betaArray;
+	// std::array < double, scenarioCount> sigmaArray;
+	// std::array < double, scenarioCount> r0Array;
+	// alphaArray.fill(alpha);
+	// betaArray.fill(beta);
+	// sigmaArray.fill(sigma);
+	// r0Array.fill(r0);
 
 	for(int i = 0; i < scenarioCount; i++)
 	{
@@ -162,7 +165,7 @@ double vasicekMode(double alpha, double beta, double sigma)
 	{
 		error += std::pow((crrntMonthMdlData[i] - crrntMonthMrktData[i]),2) ;
 	}
-	error = error/maturityCount;
+	error = std::sqrt(error/maturityCount);
 
 	// check the error
 	// if (error < tolerance)
@@ -174,7 +177,7 @@ double vasicekMode(double alpha, double beta, double sigma)
 		// and then go for the next month e.g. Feb.15
 	// else
 		// try another alpha, beta, sigma, r0
-		return std::abs(error);
+		return error;
 }
 
 double vasicekDescritize(double r0, double alpha, double beta, double sigma)
@@ -183,10 +186,11 @@ double vasicekDescritize(double r0, double alpha, double beta, double sigma)
 		double deltaT = 1.0/12.0;
 		std::random_device rd;
 	 	std::mt19937 gen(rd());
-	 	std::normal_distribution<> d(0,1);
-		double randomVariable = d(gen);
+		long double precision = 0.00000001;
+	 	std::normal_distribution<> d(precision,1.0 - precision);
+		long double randomVariable = d(gen);
 		// make delta_r with one step deltaT = 1/12;
-		delta_r = alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomVariable;
+		delta_r = alpha * (beta - r0) * deltaT + sigma * std::sqrt(r0) * randomVariable;
 
 		return r0 + delta_r;
 }
@@ -211,18 +215,26 @@ double vasicekDescritize(double r0, double alpha, double beta, double sigma)
 double vasicekYield(double r1, double alpha, double beta, double sigma, double tau)
 {
 		double yield;
-		double A,Apart,B,bondPrice;
+		long double A,B,bondPrice;
 
 		B = (1-std::exp(-alpha*tau))/alpha;
-		Apart = std::exp((B - tau)*(beta - (std::pow(sigma,2)/(2*std::pow(alpha, 2))))\
-		 - std::pow(sigma,2)*std::pow(alpha,2)/(4*alpha));
+		// A = std::exp((B - tau)*(beta - (std::pow(sigma,2)/(2*std::pow(alpha, 2))))\
+		//  - std::pow(sigma,2)*std::pow(alpha,2)/(4*alpha));
+
+		A = std::exp(((B - tau)*(std::pow(alpha,2)*beta - 0.5*std::pow(sigma,2))\
+		/std::pow(alpha,2)) - (std::pow(sigma,2)*std::pow(B,2)/(4*alpha)));
+
 		bondPrice = A*std::exp(-r1*B);
-		if (bondPrice == 0)	bondPrice = 0.000000000001;
-
+		if (bondPrice == 0)	bondPrice = 0.00000001;
+		// std::cout << "alpha: " << alpha << " beta: " << beta << " sigma: " << sigma << std::endl;
+		//  std::cout << "A is: " << A << " B is: " << B << std::endl;
 		yield = (std::pow(-tau,-1))*std::log(bondPrice);
+		//
+		//  getchar();
 
-		if(yield == inf)	yield = 100;
-		if(yield == -inf) yield = -100;
+		if(yield == inf)	yield = 10;
+		if(yield == -inf) yield = -10;
+		// std::cout << "yield is " << yield << std::endl;
 		return yield;
 }
 
