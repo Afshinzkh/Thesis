@@ -6,10 +6,14 @@
 #include <array>
 #include <random>
 #include <limits>
+#include <algorithm>
 
-// #include "vasicekMain.h"
+
+// TODO: #include "vasicekMain.h"
 
 namespace Vasicek {
+
+// template <typename T>
 
 double inf = std::numeric_limits<double>::infinity();
 // Function declarations -- TODO: later to be added into header
@@ -94,6 +98,15 @@ double vasicekMode(double alpha, double beta, double sigma)
 	// here we call the vasicekDescritize or risklabDescritize Function
 	//  to get the short rates r1
 	// TODO: take out of loop and vectorize instead
+	std::array < double, scenarioCount> alphaArray;
+	std::array < double, scenarioCount> betaArray;
+	std::array < double, scenarioCount> sigmaArray;
+	std::array < double, scenarioCount> r0Array;
+	alphaArray.fill(alpha);
+	betaArray.fill(beta);
+	sigmaArray.fill(sigma);
+	r0Array.fill(r0);
+
 	for(int i = 0; i < scenarioCount; i++)
 	{
 		r1[i] = vasicekDescritize(r0,alpha,beta,sigma);
@@ -147,7 +160,7 @@ double vasicekMode(double alpha, double beta, double sigma)
 	double error = 0.0;
 	for (int i = 0; i < maturityCount; i++)
 	{
-		error += (crrntMonthMdlData[i] - std::pow(crrntMonthMrktData[i],2)) ;
+		error += std::pow((crrntMonthMdlData[i] - crrntMonthMrktData[i]),2) ;
 	}
 	error = error/maturityCount;
 
@@ -177,6 +190,23 @@ double vasicekDescritize(double r0, double alpha, double beta, double sigma)
 
 		return r0 + delta_r;
 }
+
+// void vasicekDescritize( const std::array<T,size>& r0, std::array<T,size>& alpha,
+// 								std::array<T,size>& beta, std::array<T,size>& sigma,
+// 								std::array<T,size>& r1)
+// {
+// 		double delta_r;
+// 		double deltaT = 1.0/12.0;
+// 		std::random_device rd;
+// 	 	std::mt19937 gen(rd());
+// 	 	std::normal_distribution<> d(0,1);
+// 		std::array <double, r0.size()> randomVariable;
+// 		randomVariable.fill(d(gen));
+// 		// make delta_r with one step deltaT = 1/12;
+// 		delta_r = alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomVariable;
+//
+// 		return r0 + delta_r;
+// }
 
 double vasicekYield(double r1, double alpha, double beta, double sigma, double tau)
 {
