@@ -27,7 +27,7 @@ int main()
     // where mpCount is the count of Model Parameters;
     // e.g. for vasicek it is 3 for alpha, beta and sigma
     const int mpCount = 3;
-    std::array< std::array <double, mpCount> , NP > P;
+    std::array< std::array <long double, mpCount> , NP > P;
 
     // Define the Random Generator here
     // to get random values for model Parameters e.g. alpha, beta, sigma
@@ -37,9 +37,9 @@ int main()
 
     std::random_device rd;
 	 	std::mt19937 gen(rd());
-	 	std::uniform_real_distribution<> alphaRands(lowerBound[0],upperBound[0]);
-    std::uniform_real_distribution<> betaRands(lowerBound[1],upperBound[1]);
-    std::uniform_real_distribution<> sigmaRands(lowerBound[2],upperBound[2]);
+	 	std::uniform_real_distribution<long double> alphaRands(lowerBound[0],upperBound[0]);
+    std::uniform_real_distribution<long double> betaRands(lowerBound[1],upperBound[1]);
+    std::uniform_real_distribution<long double> sigmaRands(lowerBound[2],upperBound[2]);
 
     // Pick Random Variables for model parameters
     // P[i][0] = a random double value for alpha with restrictions 0<alpha<12
@@ -63,7 +63,7 @@ int main()
     // Define Tolerance for Error
     double tol = 0.0001;
     double avgError = 1.0;
-    int maxIter = 100;
+    int maxIter = 50;
     int iter = 0;
     double newError = 2.0;
     int loopCount = 0;
@@ -92,7 +92,7 @@ int main()
 
         // Do the MUtation Stage as follows
         // define a mutated population as mutP
-        std::array< std::array <double, mpCount> , NP > mutP;
+        std::array< std::array <long double, mpCount> , NP > mutP;
 
         // TODO:  Here the boundaries of the model parameters might exceed,
         //  so you should think of something
@@ -112,7 +112,7 @@ int main()
             while (id3 == i || id3 == id1 || id3 == id2) id3 = indexRands(gen);
 
             // std::cout << "Created Indexes are: " << i << " " << id1 << id2 << id3 <<std::endl;
-
+            // Check the boundaries
             mutP[i][0] = P[id1][0] + F * (P[id2][0] - P[id3][0]);
             if(mutP[i][0] > upperBound[0])
                 mutP[i][0] = upperBound[0] - 0.00001;
@@ -135,7 +135,7 @@ int main()
 
         // Crossover the mutated with the origital Poupation
         // define a Crossover Population as crP
-        std::array< std::array <double, mpCount> , NP > crP;
+        std::array< std::array <long double, mpCount> , NP > crP;
 
         // Define the random Distribution U(0,1)
         std::uniform_real_distribution<> crRands(0,1);

@@ -214,13 +214,15 @@ double vasicekDescritize(double r0, double alpha, double beta, double sigma)
 
 double vasicekYield(double r1, double alpha, double beta, double sigma, double tau)
 {
-		double yield;
+		long double yield;
 		long double A,B,bondPrice;
 
-		B = (1-std::exp(-alpha*tau))/alpha;
-		// A = std::exp((B - tau)*(beta - (std::pow(sigma,2)/(2*std::pow(alpha, 2))))\
-		//  - std::pow(sigma,2)*std::pow(alpha,2)/(4*alpha));
+		// TODO: The formulations for A and B are taken from "Options, feauters
+		// and other derivatives" book. "A" some times is so small that it becomes zero
+		// that's why it might lead to a infinity yield value. that's why I made them
+		// long double. maybe there is a better solution to that ....
 
+		B = (1-std::exp(-alpha*tau))/alpha;
 		A = std::exp(((B - tau)*(std::pow(alpha,2)*beta - 0.5*std::pow(sigma,2))\
 		/std::pow(alpha,2)) - (std::pow(sigma,2)*std::pow(B,2)/(4*alpha)));
 
