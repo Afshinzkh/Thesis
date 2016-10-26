@@ -1,32 +1,12 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <array>
-#include <random>
-#include <limits>
-#include <algorithm>
+#include "../Headers/vasicekMain.h"
 
+namespace Calibration {
 
-// TODO: #include "vasicekMain.h"
-
-namespace Vasicek {
-
-// template <typename T>
 
 double inf = std::numeric_limits<double>::infinity();
-// Function declarations -- TODO: later to be added into header
-double vasicekMode(double alpha, double beta, double sigma);
-double vasicekDescritize(double r0, double alpha, double beta, double sigma);
-double vasicekYield(double r1, double alpha, double beta, double sigma, double tau);
 
-/// Function definition
-double vasicekMode(double alpha, double beta, double sigma)
+double Vasicek::run(double alpha, double beta, double sigma)
 {
-	// Test The funcking code Here
-	/* Test the Commenting */
-	// std::cout << "Calculating Vasicek ... " << std::endl;
 	/****************************************************************************/
 	/******************** STEP 1 : READ THE DATA ********************************/
 	/****************************************************************************/
@@ -42,7 +22,7 @@ double vasicekMode(double alpha, double beta, double sigma)
 	// TODO: think of reading the data without knowing the row size
 	std::array<std::array<double,9>, 13> mrktData;
 
-	std::ifstream dataFile("Data.csv");
+	std::ifstream dataFile("../Data/Data.csv");
 	int row = 0;
 	int col = 0;
 	if(dataFile.is_open())
@@ -64,20 +44,15 @@ double vasicekMode(double alpha, double beta, double sigma)
 		}
 	}
 	dataFile.close();
-	// std::cout << "reached end of file" << std::endl;
-	// std::cout << "data[11][5] is :" << mrktData[11][4] << std::endl;
 
+// 	std::cout << "data[11][5] is :" << mrktData[11][8] << std::endl;
+// getchar();
 
 	// read the first row of mrktData wich would be for the first month e.g. Jan.2015
 	// and put this into an array called crrntMonthMrktData with size of [1 * maturityCount]
 	std::array<double,9> crrntMonthMrktData;
 	crrntMonthMrktData = mrktData[11];
 
-	// for (size_t i = 0; i < 9; i++) {
-	// 	 std::cout << "current data is :" << crrntMonthMrktData[i] << std::endl;
-	// }
-	// getchar();
-	// we want to get an array to compare it with crrntMonthMrktData
 	// Initialize r0 to a given value;
 	double r0 = 0.0006;
 
@@ -115,7 +90,7 @@ double vasicekMode(double alpha, double beta, double sigma)
 
 	for(int i = 0; i < scenarioCount; i++)
 	{
-		r1[i] = vasicekDescritize(r0,alpha,beta,sigma);
+		r1[i] = descritize(r0,alpha,beta,sigma);
 	}
 
 
@@ -133,7 +108,7 @@ double vasicekMode(double alpha, double beta, double sigma)
 	{
 		for (int j = 0; j < maturityCount; j++)
 		{
-			y[i][j] = vasicekYield(r1[i], alpha, beta, sigma, tau[j]);
+			y[i][j] = getYield(r1[i], alpha, beta, sigma, tau[j]);
 		}
 	}
 	// now we average the matrix for each maturity and
@@ -185,7 +160,7 @@ double vasicekMode(double alpha, double beta, double sigma)
 		return error;
 }
 
-double vasicekDescritize(double r0, double alpha, double beta, double sigma)
+double Vasicek::descritize(double r0, double alpha, double beta, double sigma)
 {
 		double delta_r;
 		double deltaT = 1.0/12.0;
@@ -219,7 +194,7 @@ double vasicekDescritize(double r0, double alpha, double beta, double sigma)
 // 		return r0 + delta_r;
 // }
 
-double vasicekYield(double r1, double alpha, double beta, double sigma, double tau)
+double Vasicek::getYield(double r1, double alpha, double beta, double sigma, double tau)
 {
 		long double yield;
 		long double A,B,bondPrice;
