@@ -8,13 +8,13 @@
 
 
 #include "../Headers/vasicekMain.h"
+#include "../Headers/deMain.h"
 
-using namespace Calibration;
+namespace Calibration
+{
 
-// namespace DifferentialEvolution
-// {
 
-  int main()
+  void DE::runDE(std::array<double, 9> const &crrntMonthMrktData)
   {
   	// Select the DE Parameters as follows, NP  : Population Size >= 4
       //                                      F   : Scale Factor
@@ -36,16 +36,17 @@ using namespace Calibration;
       std::array<double, 3> upperBound = {12.0, 1, 1};
       std::array<double, 3> lowerBound = {0.0, 0.0, 0.0};
 
+      // Pick Random Variables for model parameters
+      // P[i][0] = a random double value for alpha with restrictions 0<alpha<12
+      // P[i][1] = a random double value for beta with restrictions beta in R
+      // P[i][2] = a random double value for sigma with restrictions 0<sigma
+
+      // Define the Random Device
       std::random_device rd;
   	 	std::mt19937 gen(rd());
   	 	std::uniform_real_distribution<long double> alphaRands(lowerBound[0],upperBound[0]);
       std::uniform_real_distribution<long double> betaRands(lowerBound[1],upperBound[1]);
       std::uniform_real_distribution<long double> sigmaRands(lowerBound[2],upperBound[2]);
-
-      // Pick Random Variables for model parameters
-      // P[i][0] = a random double value for alpha with restrictions 0<alpha<12
-      // P[i][1] = a random double value for beta with restrictions beta in R
-      // P[i][2] = a random double value for sigma with restrictions 0<sigma
 
       for(int i = 0; i < NP; i++)
       {
@@ -54,17 +55,11 @@ using namespace Calibration;
         P[i][2] = sigmaRands(gen);
       }
 
-      // for(int i = 0; i < NP; i++)
-      // {
-      //   std::cout << "random alpha " << i+1 << " is: " << P[i][0] <<std::endl;
-      //   std::cout << "random beta " << i+1 << " is: " << P[i][1] <<std::endl;
-      //   std::cout << "random sigma " << i+1 << " is: " << P[i][2] <<std::endl;
-      // }
 
       // Define Tolerance for Error
       double tol = 0.00001;
       double avgError = 1.0;
-      int maxIter = 50;
+      int maxIter = 60;
       int iter = 0;
       double newError = 2.0;
       int loopCount = 0;
@@ -81,15 +76,17 @@ using namespace Calibration;
           double sum = 0.0;
           for(int i = 0; i < NP; i++)
           {
-              pError[i] = v->run(P[i][0], P[i][1], P[i][2]);
+              pError[i] = v->run(P[i][0], P[i][1], P[i][2], crrntMonthMrktData);
               sum += pError[i];
           }
 
           // compute the average Error
           avgError = sum/NP;
           loopCount++;
-          std::cout << "Average Error for Calculation loop :" << loopCount;
-          std::cout << "\t is : " << avgError << std::endl;
+
+            std::cout << " * " << std::flush;
+          if (loopCount % 10 == 0 )
+             std::cout << std::endl;
 
             // std::cout << "Press Enter" << std::endl;
           // getchar();
@@ -161,7 +158,7 @@ using namespace Calibration;
           double crError [NP];
           for(int i = 0; i < NP; i++)
           {
-              crError[i] = v->run(crP[i][0], crP[i][1], crP[i][2]);
+              crError[i] = v->run(crP[i][0], crP[i][1], crP[i][2], crrntMonthMrktData);
           }
 
           // Now you can compare the Error and if the error of one crossover population
@@ -202,9 +199,12 @@ using namespace Calibration;
       finBeta = finBeta/NP;
       finSigma = finSigma/NP;
 
-      std::cout << "final alpha:" <<  finAlpha <<std::endl;
+      std::cout << "\nfinal alpha:" <<  finAlpha <<std::endl;
       std::cout << "final beta:" << finBeta <<std::endl;
       std::cout << "final sigma:" << finSigma <<std::endl;
+
+      std::cout << "Average Error for Calculation loop :" << loopCount;
+      std::cout << "\t is : " << avgError << std::endl;
 
       // JUST A TEST TO GET THE FINAL YIELDS
       double r1 = v->descritize(0.0006, finAlpha, finBeta, finSigma);
@@ -216,4 +216,4 @@ using namespace Calibration;
       }
       // TODO: get return values from deMain as a double array
   }
-// }
+}

@@ -9,6 +9,7 @@
 
 #include "../Headers/vasicekMain.h"
 #include "../Headers/deMain.h"
+using namespace Calibration;
 
 int main()
 {
@@ -41,7 +42,6 @@ int main()
   // and maturityCount as the number of maturities. e.g mrktData [12 * 9]
   // we also have an array tau [maturityCount] as the Time to maturity
 
-  const int maturityCount = 9; // TODO: think of this
   std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
   // define the data coloumn 1 size bigger so it doesn't go ham while reading
   // TODO: think of reading the data without knowing the row size
@@ -74,17 +74,23 @@ int main()
   // read the first row of mrktData wich would be for the first month e.g. Jan.2015
   // and put this into an array called crrntMonthMrktData with size of [1 * maturityCount]
   std::array<double,9> crrntMonthMrktData;
-  crrntMonthMrktData = mrktData[11];
 
-  
-
+  DE d;
+  std::array <std::string, 12> monthNames = {
+    "Jan.2015", "Feb.2015", "Mar.2015", "Apr.2015", "May.2015",
+    "Jun.2015", "Jul.2015", "Aug.2015", "Sep.2015", "Oct.2015",
+    "Nov.2015", "Dec.2015"
+  };
   // Call the Differential Evolution Function
   // for each time-serie
-  // for(int i = 0; i < timeSeriesCount; i++)
-  // {
-  //   deMain()
-  // }
+  for(int i = 0; i < timeSeriesCount; i++)
+  {
+    crrntMonthMrktData = mrktData[timeSeriesCount-1-i];
+    std::cout << "=============================" << std::endl;
+    std::cout << "Running DE for :" << monthNames[i] << std::endl;
+    d.runDE(crrntMonthMrktData);
+  }
 
 
-
+  return 0;
 }

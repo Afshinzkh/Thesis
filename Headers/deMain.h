@@ -10,11 +10,14 @@
 #include <limits>
 #include <algorithm>
 
-namespace DifferentialEvolution {
 
-  class DE {
+namespace Calibration {
+
+
+
+  class  DE{
     public:
-      void runDE();
+      void runDE(std::array<double, 9> const &crrntMonthMrktData);
   };
 
 }

@@ -5,7 +5,12 @@ namespace Calibration {
 
 double inf = std::numeric_limits<double>::infinity();
 
-double Vasicek::run(double alpha, double beta, double sigma)
+// define this template to be able to get the crrntMonthMrktDataArray
+// with any Given Size
+
+
+double Vasicek::run(double alpha, double beta, double sigma,
+								std::array<double, 9> const &crrntMonthMrktData)
 {
 	/****************************************************************************/
 	/******************** STEP 1 : READ THE DATA ********************************/
@@ -19,39 +24,39 @@ double Vasicek::run(double alpha, double beta, double sigma)
 	const int maturityCount = 9; // TODO: think of this
 	std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
 	// define the data coloumn 1 size bigger so it doesn't go ham while reading
-	// TODO: think of reading the data without knowing the row size
-	std::array<std::array<double,9>, 13> mrktData;
-
-	std::ifstream dataFile("../Data/Data.csv");
-	int row = 0;
-	int col = 0;
-	if(dataFile.is_open())
-	{
-		// std::cout << "Data File is Opened" << std::endl;
-
-		std::string aLine;
-		while(getline(dataFile, aLine))
-		{
-			std::istringstream ss(aLine);
-			std::string num;
-			while(ss >> num)
-			{
-				mrktData[row][col] = std::stod(num.c_str());
-				col++;
-			}
-			row++;
-			col = 0;
-		}
-	}
-	dataFile.close();
+	// // TODO: think of reading the data without knowing the row size
+	// std::array<std::array<double,9>, 13> mrktData;
+	//
+	// std::ifstream dataFile("../Data/Data.csv");
+	// int row = 0;
+	// int col = 0;
+	// if(dataFile.is_open())
+	// {
+	// 	// std::cout << "Data File is Opened" << std::endl;
+	//
+	// 	std::string aLine;
+	// 	while(getline(dataFile, aLine))
+	// 	{
+	// 		std::istringstream ss(aLine);
+	// 		std::string num;
+	// 		while(ss >> num)
+	// 		{
+	// 			mrktData[row][col] = std::stod(num.c_str());
+	// 			col++;
+	// 		}
+	// 		row++;
+	// 		col = 0;
+	// 	}
+	// }
+	// dataFile.close();
 
 // 	std::cout << "data[11][5] is :" << mrktData[11][8] << std::endl;
 // getchar();
 
 	// read the first row of mrktData wich would be for the first month e.g. Jan.2015
 	// and put this into an array called crrntMonthMrktData with size of [1 * maturityCount]
-	std::array<double,9> crrntMonthMrktData;
-	crrntMonthMrktData = mrktData[11];
+	// std::array<double,9> crrntMonthMrktData;
+	// crrntMonthMrktData = mrktData[11];
 
 	// Initialize r0 to a given value;
 	double r0 = 0.0006;
