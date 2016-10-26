@@ -20,8 +20,8 @@ int main()
 	//                                      CR  : Crossover Ratio [0,1]
 
     const int NP = 15;
-    double F = 0.9;
-    double CR = 0.6;
+    double F = 0.85;
+    double CR = 0.7;
 
     // Creat a population matrix P with the size of [NP * mpCount]
     // where mpCount is the count of Model Parameters;
@@ -32,7 +32,7 @@ int main()
     // Define the Random Generator here
     // to get random values for model Parameters e.g. alpha, beta, sigma
     // Upper and Lower bounds for them are also defined here
-    std::array<double, 3> upperBound = {12.0, 10000, 100};
+    std::array<double, 3> upperBound = {12.0, 1, 1};
     std::array<double, 3> lowerBound = {0.0, 0.0, 0.0};
 
     std::random_device rd;
@@ -61,7 +61,7 @@ int main()
     // }
 
     // Define Tolerance for Error
-    double tol = 0.0001;
+    double tol = 0.00001;
     double avgError = 1.0;
     int maxIter = 50;
     int iter = 0;

@@ -109,6 +109,9 @@ double vasicekMode(double alpha, double beta, double sigma)
 	// betaArray.fill(beta);
 	// sigmaArray.fill(sigma);
 	// r0Array.fill(r0);
+	// alpha = 3;
+	// sigma = 0.5;
+	// beta = 0.0035;
 
 	for(int i = 0; i < scenarioCount; i++)
 	{
@@ -117,7 +120,7 @@ double vasicekMode(double alpha, double beta, double sigma)
 
 
 	/****************************************************************************/
-	/******************** STEP 1 : Get Model Yield ******************************/
+	/******************** STEP 3 : Get Model Yield ******************************/
 	/****************************************************************************/
 	// Now that we have r1 we can use it to calculate the yield for each maturity;
 	// remember maturityCount is the number of maturities, so we will have a matrix of
@@ -177,6 +180,8 @@ double vasicekMode(double alpha, double beta, double sigma)
 		// and then go for the next month e.g. Feb.15
 	// else
 		// try another alpha, beta, sigma, r0
+		// getchar();
+
 		return error;
 }
 
@@ -187,7 +192,10 @@ double vasicekDescritize(double r0, double alpha, double beta, double sigma)
 		std::random_device rd;
 	 	std::mt19937 gen(rd());
 	 	std::normal_distribution<> d(0.0,1.0);
+
 		long double randomVariable = d(gen);
+		// long double r1 = r0 * std::exp(-alpha*deltaT) + beta * (1 - std::exp(-alpha*deltaT))\
+		// + sigma * std::sqrt((1 - std::exp(-2*alpha*deltaT))/(2*alpha)) * randomVariable;
 		// make delta_r with one step deltaT = 1/12;
 		delta_r = alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomVariable;
 
@@ -226,16 +234,17 @@ double vasicekYield(double r1, double alpha, double beta, double sigma, double t
 		/std::pow(alpha,2)) - (std::pow(sigma,2)*std::pow(B,2)/(4*alpha)));
 
 		bondPrice = A*std::exp(-r1*B);
-		if (bondPrice == 0)	bondPrice = 0.00000001;
+		if (bondPrice == 0)	bondPrice = 0.000001;
 		// std::cout << "alpha: " << alpha << " beta: " << beta << " sigma: " << sigma << std::endl;
-		//  std::cout << "A is: " << A << " B is: " << B << std::endl;
+		  // std::cout << "A is: " << A << " B is: " << B << std::endl;
 		yield = (std::pow(-tau,-1))*std::log(bondPrice);
 		//
-		//  getchar();
 
+		// TODO: A might be too small that makes yield to become infinity
+		// I made it long double but still sometimes it becoms inf
 		if(yield == inf)	yield = 10;
 		if(yield == -inf) yield = -10;
-		// std::cout << "yield is " << yield << std::endl;
+
 		return yield;
 }
 
