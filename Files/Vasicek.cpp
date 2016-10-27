@@ -50,7 +50,7 @@ double Vasicek::run(double alpha, double beta, double sigma,
 
 	for(int i = 0; i < scenarioCount; i++)
 	{
-		r1[i] = descritize(r0,alpha,beta,sigma);
+		r1[i] = nextRate(r0,alpha,beta,sigma);
 	}
 
 
@@ -120,7 +120,7 @@ double Vasicek::run(double alpha, double beta, double sigma,
 		return error;
 }
 
-double Vasicek::descritize(double r0, double alpha, double beta, double sigma)
+double Vasicek::nextRate(double r0, double alpha, double beta, double sigma)
 {
 		double delta_r;
 		double deltaT = 1.0/12.0;
@@ -181,6 +181,18 @@ double Vasicek::getYield(double r1, double alpha, double beta, double sigma, dou
 		if(yield == -inf) yield = -10;
 
 		return yield;
-}
+	}
+
+	void Vasicek::setParameters(double a, double b, double s)
+	{
+		alpha = a;
+		beta = b;
+		sigma = s;
+	}
+
+	double Vasicek::getError()
+	{
+		return error;
+	}
 
 } // namespace Vasicek

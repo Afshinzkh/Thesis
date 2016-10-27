@@ -3,6 +3,7 @@
 
 namespace Calibration
 {
+  #define boundaryMIN 0.000001;
 
   template < size_t N >
   void DE::runDE(std::string methodName,
@@ -109,21 +110,21 @@ namespace Calibration
               // Check the boundaries
               mutP[i][0] = P[id1][0] + F * (P[id2][0] - P[id3][0]);
               if(mutP[i][0] > upperBound[0])
-                  mutP[i][0] = upperBound[0] - 0.000001;
+                  mutP[i][0] = upperBound[0] - boundaryMIN;
               if(mutP[i][0] < lowerBound[0])
-                  mutP[i][0] = lowerBound[0] + 0.000001;
+                  mutP[i][0] = lowerBound[0] + boundaryMIN;
 
               mutP[i][1] = P[id1][1] + F * (P[id2][1] - P[id3][1]);
               if(mutP[i][1] > upperBound[1])
-                  mutP[i][1] = upperBound[1] - 0.000001;
+                  mutP[i][1] = upperBound[1] - boundaryMIN;
               if(mutP[i][1] < lowerBound[1])
-                  mutP[i][1] = lowerBound[1] + 0.000001;
+                  mutP[i][1] = lowerBound[1] + boundaryMIN;
 
               mutP[i][2] = P[id1][2] + F * (P[id2][2] - P[id3][2]);
               if(mutP[i][2] > upperBound[2])
-                  mutP[i][2] = upperBound[2] - 0.000001;
+                  mutP[i][2] = upperBound[2] - boundaryMIN;
               if(mutP[i][2] < lowerBound[2])
-                  mutP[i][2] = lowerBound[2] + 0.000001;
+                  mutP[i][2] = lowerBound[2] + boundaryMIN;
 
           }
 
@@ -191,7 +192,7 @@ namespace Calibration
       std::cout << "\t is : " << avgError << std::endl;
 
       // JUST A TEST TO GET THE FINAL YIELDS
-      double r1 = v->descritize(0.0006, finAlpha, finBeta, finSigma);
+      double r1 = v->nextRate(0.0006, finAlpha, finBeta, finSigma);
       std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
       std::array<double,9> y;
       for (size_t i = 0; i < 9; i++) {
