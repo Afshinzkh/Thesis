@@ -5,10 +5,11 @@ namespace Calibration
 {
 
   template < size_t N >
-  void DE::runDE(std::array<double, N> const &crrntMonthMrktData)
+  void DE::runDE(std::string methodName,
+            std::array<double, N> const &crrntMonthMrktData)
   {
   	// Select the DE Parameters as follows, NP  : Population Size >= 4
-      //                                      F   : Scale Factor
+    //                                      F   : Scale Factor
   	//                                      CR  : Crossover Ratio [0,1]
 
       const int NP = 15;
@@ -52,7 +53,6 @@ namespace Calibration
       double avgError = 1.0;
       int maxIter = 60;
       int iter = 0;
-      double newError = 2.0;
       int loopCount = 0;
 
       // std::shared_ptr<Base> v;
@@ -64,7 +64,6 @@ namespace Calibration
       // }
       auto v = new Vasicek;
 
-      // Vasicek v;
       // The loop of DE Starts Here
       while (tol < avgError && iter < maxIter)
       {
@@ -87,15 +86,11 @@ namespace Calibration
           if (loopCount % 10 == 0 )
              std::cout << std::endl;
 
-            // std::cout << "Press Enter" << std::endl;
-          // getchar();
 
-          // Do the MUtation Stage as follows
+          // Do the Mutation Stage as follows
           // define a mutated population as mutP
           std::array< std::array <long double, mpCount> , NP > mutP;
 
-          // TODO:  Here the boundaries of the model parameters might exceed,
-          //  so you should think of something
           // Define the Random Generator here
           // to get random values for model Parameters e.g. alpha, beta, sigma
       	 	std::uniform_int_distribution<> indexRands(0,NP-1);
@@ -111,25 +106,24 @@ namespace Calibration
               while (id2 == i || id2 == id1) id2 = indexRands(gen);
               while (id3 == i || id3 == id1 || id3 == id2) id3 = indexRands(gen);
 
-              // std::cout << "Created Indexes are: " << i << " " << id1 << id2 << id3 <<std::endl;
               // Check the boundaries
               mutP[i][0] = P[id1][0] + F * (P[id2][0] - P[id3][0]);
               if(mutP[i][0] > upperBound[0])
-                  mutP[i][0] = upperBound[0] - 0.00001;
+                  mutP[i][0] = upperBound[0] - 0.000001;
               if(mutP[i][0] < lowerBound[0])
-                  mutP[i][0] = lowerBound[0] + 0.00001;
+                  mutP[i][0] = lowerBound[0] + 0.000001;
 
               mutP[i][1] = P[id1][1] + F * (P[id2][1] - P[id3][1]);
               if(mutP[i][1] > upperBound[1])
-                  mutP[i][1] = upperBound[1] - 0.00001;
+                  mutP[i][1] = upperBound[1] - 0.000001;
               if(mutP[i][1] < lowerBound[1])
-                  mutP[i][1] = lowerBound[1] + 0.00001;
+                  mutP[i][1] = lowerBound[1] + 0.000001;
 
               mutP[i][2] = P[id1][2] + F * (P[id2][2] - P[id3][2]);
               if(mutP[i][2] > upperBound[2])
-                  mutP[i][2] = upperBound[2] - 0.00001;
+                  mutP[i][2] = upperBound[2] - 0.000001;
               if(mutP[i][2] < lowerBound[2])
-                  mutP[i][2] = lowerBound[2] + 0.00001;
+                  mutP[i][2] = lowerBound[2] + 0.000001;
 
           }
 
@@ -162,7 +156,6 @@ namespace Calibration
 
           // Now you can compare the Error and if the error of one crossover population
           // is less than the error of one original population you copy that
-          //  sum = 0.0;
           for(int i = 0; i < NP; i++)
           {
                if (crError[i] < pError [i])
@@ -170,23 +163,15 @@ namespace Calibration
                  P[i][0] = crP[i][0];
                  P[i][1] = crP[i][1];
                  P[i][2] = crP[i][2];
-                //  sum += crError[i];
               }
-              // else
-              //  sum += pError[i];
           }
-          //  newError = sum/NP;
-          // // So with this new P you can again check the error and go ahead and repeat
-          // // but before check if we are stuck
-          // if (std::abs(newError - avgError) == 0){
-          //   std::cout << "Average Error for Calculation loop :" << loopCount+1;
-          //   std::cout << "\t is : " << avgError << std::endl;
-          //   std::cout << "no good result :( " << std::endl;
-          //   break;
-          // }
+          // So with this new P you can again check the error and go ahead and repeat
+
           iter++;
 
       }
+
+      // Print out the final Values and also add them to the main arrays
       double finAlpha, finBeta, finSigma;
       for(int i = 0; i < NP; i++)
       {

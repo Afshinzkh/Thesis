@@ -12,51 +12,9 @@ double inf = std::numeric_limits<double>::infinity();
 double Vasicek::run(double alpha, double beta, double sigma,
 								std::array<double, 9> const &crrntMonthMrktData)
 {
-	/****************************************************************************/
-	/******************** STEP 1 : READ THE DATA ********************************/
-	/****************************************************************************/
-	// read the data from file e.g. for 12 month
-	// it is a matrix named mrktData and has the size of
-	// sereisCount * maturityCount with seriesCount as the number of month
-	// and maturityCount as the number of maturities. e.g mrktData [12 * 9]
-	// we also have an array tau [maturityCount] as the Time to maturity
 
 	const int maturityCount = 9; // TODO: think of this
 	std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
-	// define the data coloumn 1 size bigger so it doesn't go ham while reading
-	// // TODO: think of reading the data without knowing the row size
-	// std::array<std::array<double,9>, 13> mrktData;
-	//
-	// std::ifstream dataFile("../Data/Data.csv");
-	// int row = 0;
-	// int col = 0;
-	// if(dataFile.is_open())
-	// {
-	// 	// std::cout << "Data File is Opened" << std::endl;
-	//
-	// 	std::string aLine;
-	// 	while(getline(dataFile, aLine))
-	// 	{
-	// 		std::istringstream ss(aLine);
-	// 		std::string num;
-	// 		while(ss >> num)
-	// 		{
-	// 			mrktData[row][col] = std::stod(num.c_str());
-	// 			col++;
-	// 		}
-	// 		row++;
-	// 		col = 0;
-	// 	}
-	// }
-	// dataFile.close();
-
-// 	std::cout << "data[11][5] is :" << mrktData[11][8] << std::endl;
-// getchar();
-
-	// read the first row of mrktData wich would be for the first month e.g. Jan.2015
-	// and put this into an array called crrntMonthMrktData with size of [1 * maturityCount]
-	// std::array<double,9> crrntMonthMrktData;
-	// crrntMonthMrktData = mrktData[11];
 
 	// Initialize r0 to a given value;
 	double r0 = 0.0006;
@@ -67,7 +25,7 @@ double Vasicek::run(double alpha, double beta, double sigma,
  // Values are Taken from DE algorithm
 
  /****************************************************************************/
- /******************** STEP 2 : Calculate r1 *********************************/
+ /******************** STEP 1 : Calculate r1 *********************************/
  /****************************************************************************/
 	// Use Monte Carlo idea for vasicek/risklab Descritization to calculate r1
 	// Here we call the vasicekDescritize Function with alpha, beta, sigma, r0 as inputs
@@ -89,9 +47,6 @@ double Vasicek::run(double alpha, double beta, double sigma,
 	// betaArray.fill(beta);
 	// sigmaArray.fill(sigma);
 	// r0Array.fill(r0);
-	// alpha = 3;
-	// sigma = 0.5;
-	// beta = 0.0035;
 
 	for(int i = 0; i < scenarioCount; i++)
 	{
@@ -100,7 +55,7 @@ double Vasicek::run(double alpha, double beta, double sigma,
 
 
 	/****************************************************************************/
-	/******************** STEP 3 : Get Model Yield ******************************/
+	/******************** STEP 2 : Get Model Yield ******************************/
 	/****************************************************************************/
 	// Now that we have r1 we can use it to calculate the yield for each maturity;
 	// remember maturityCount is the number of maturities, so we will have a matrix of

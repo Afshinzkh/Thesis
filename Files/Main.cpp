@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     crrntMonthMrktData = mrktData[seriesCount-1-i];
     std::cout << "=============================" << std::endl;
     std::cout << "Running DE for :" << monthNames[i] << std::endl;
-    d.runDE(argv[2], crrntMonthMrktData);
+    d.runDE(argv[2], crrntMonthMrktData); // in DE.tpp file
   }
 
 
