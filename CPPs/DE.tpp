@@ -1,20 +1,11 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <array>
-#include <random>
-
-
-#include "../Headers/vasicekMain.h"
-#include "../Headers/deMain.h"
+#include "../Headers/Vasicek.h"
+#include "../Headers/DE.h"
 
 namespace Calibration
 {
 
-
-  void DE::runDE(std::array<double, 9> const &crrntMonthMrktData)
+  template < size_t N >
+  void DE::runDE(std::array<double, N> const &crrntMonthMrktData)
   {
   	// Select the DE Parameters as follows, NP  : Population Size >= 4
       //                                      F   : Scale Factor
@@ -64,7 +55,15 @@ namespace Calibration
       double newError = 2.0;
       int loopCount = 0;
 
+      // std::shared_ptr<Base> v;
+      //
+      // if(arg == "Vasicek") {
+      //   v.reset(new Vasicek)
+      // } else {
+      //   v.reset(new risklab)
+      // }
       auto v = new Vasicek;
+
       // Vasicek v;
       // The loop of DE Starts Here
       while (tol < avgError && iter < maxIter)

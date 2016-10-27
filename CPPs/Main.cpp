@@ -1,14 +1,7 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <array>
-#include <random>
+#include "../Headers/Vasicek.h"
+#include "../Headers/DE.h"
+#include "../Headers/Helper.h"
 
-
-#include "../Headers/vasicekMain.h"
-#include "../Headers/deMain.h"
 using namespace Calibration;
 
 int main()
@@ -17,21 +10,25 @@ int main()
   // parameters as well as the final yield curve for each time-serie
 
   /****************************************************************************/
-	/******************** STEP 1 : Initialize variables *************************/
-	/****************************************************************************/
-  // Define an array for Model Parameters e.g. alpha, beta, sigma
-  // for now the length is 12 since we want to get the values for 12 months
-  std::array<double , 12> alphaArray;
-  std::array<double , 12> betaArray;
-  std::array<double , 12> sigmaArray;
-
+  /******************** STEP 1 : Initialize variables *************************/
+  /****************************************************************************/
+  // TODO: for now time-series length is 12 since we wanna get the values
+  // for 12 months and maturity is 9 according to our data
   // Maturity [0.25, 1, 3, 5, 7, 10, 15, 20, 30]
   const int maturityCount = 9;
   // Jan 2015 bis Dec. 2015
-  const int timeSeriesCount = 12;
+  const int seriesCount = 12;
 
-  // this is the value that stores the final modelYields
-  std::array< std::array< double, maturityCount>, timeSeriesCount> modelYields;
+  // Define time to maturity
+  std::array<double,maturityCount> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
+
+  // Define an array for Model Parameters e.g. alpha, beta, sigma
+  std::array<double , seriesCount> alphaArray;
+  std::array<double , seriesCount> betaArray;
+  std::array<double , seriesCount> sigmaArray;
+
+  // Define the array that stores the final modelYields
+  std::array< std::array< double, maturityCount>, seriesCount> modelYields;
 
   /****************************************************************************/
 	/******************** STEP 1 : Read the Data ********************************/
@@ -42,50 +39,36 @@ int main()
   // and maturityCount as the number of maturities. e.g mrktData [12 * 9]
   // we also have an array tau [maturityCount] as the Time to maturity
 
-  std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
-  // define the data coloumn 1 size bigger so it doesn't go ham while reading
   // TODO: think of reading the data without knowing the row size
-  std::array<std::array<double,9>, 12> mrktData;
+    std::array<std::array<double,maturityCount>, seriesCount> mrktData;
+  // An array of [1 * maturityCount] that holds only the current month values
+    std::array<double,maturityCount> crrntMonthMrktData;
 
-  std::ifstream dataFile("../Data/Data.csv");
-  int row = 0;
-  int col = 0;
-  if(dataFile.is_open())
-  {
-    // std::cout << "Data File is Opened" << std::endl;
+  // TODO: here you have to get the first argument of main as file name
+  readData("hi", mrktData);
 
-    std::string aLine;
-    while(getline(dataFile, aLine))
-    {
-      std::istringstream ss(aLine);
-      std::string num;
-      while(ss >> num)
-      {
-        mrktData[row][col] = std::stod(num.c_str());
-        col++;
-      }
-      row++;
-      col = 0;
-    }
-  }
-  dataFile.close();
-  // std::cout << "reached end of file" << std::endl;
+  /****************************************************************************/
+	/*************************** STEP 2 : Run DE ********************************/
+	/****************************************************************************/
+  // Here we call the DE functions to run over the data
+  // main DE function which is called runDE implments the DE algorithm and
+  // calculates the Error for each time-serie we have
 
-  // read the first row of mrktData wich would be for the first month e.g. Jan.2015
-  // and put this into an array called crrntMonthMrktData with size of [1 * maturityCount]
-  std::array<double,9> crrntMonthMrktData;
-
+  // define the Differential Evolution object
   DE d;
-  std::array <std::string, 12> monthNames = {
+
+  // This is just for current beauty
+  std::array <std::string, seriesCount> monthNames = {
     "Jan.2015", "Feb.2015", "Mar.2015", "Apr.2015", "May.2015",
     "Jun.2015", "Jul.2015", "Aug.2015", "Sep.2015", "Oct.2015",
     "Nov.2015", "Dec.2015"
   };
+
   // Call the Differential Evolution Function
   // for each time-serie
-  for(int i = 0; i < timeSeriesCount; i++)
+  for(int i = 0; i < seriesCount; i++)
   {
-    crrntMonthMrktData = mrktData[timeSeriesCount-1-i];
+    crrntMonthMrktData = mrktData[seriesCount-1-i];
     std::cout << "=============================" << std::endl;
     std::cout << "Running DE for :" << monthNames[i] << std::endl;
     d.runDE(crrntMonthMrktData);
