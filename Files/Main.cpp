@@ -4,10 +4,26 @@
 
 using namespace Calibration;
 
-int main()
+// In the main we go through each time-serie and get the optimized model
+// parameters as well as the final yield curve for each time-serie
+int main(int argc, char* argv[])
 {
-  // In the main we go through each time-serie and get the optimized model
-  // parameters as well as the final yield curve for each time-serie
+
+  // Cheking the Arguments
+  if( argc != 3){
+    std::cout << "Error: Wrong number of Arguments" << std::endl;
+    return -1;
+  }
+
+  if(argv[2] != std::string("vasicek") && argv[2] != std::string("risklab")  )
+  {
+    std::cout << "Error: Wrong Method Name" << std::endl;
+    return -1;
+  }
+
+  std::cout << "Method to use: " << argv[2] << std::endl;
+
+
 
   /****************************************************************************/
   /******************** STEP 1 : Initialize variables *************************/
@@ -45,7 +61,7 @@ int main()
     std::array<double,maturityCount> crrntMonthMrktData;
 
   // TODO: here you have to get the first argument of main as file name
-  readData("hi", mrktData);
+  readData(argv[1], mrktData);
 
   /****************************************************************************/
 	/*************************** STEP 2 : Run DE ********************************/
@@ -71,7 +87,7 @@ int main()
     crrntMonthMrktData = mrktData[seriesCount-1-i];
     std::cout << "=============================" << std::endl;
     std::cout << "Running DE for :" << monthNames[i] << std::endl;
-    d.runDE(crrntMonthMrktData);
+    d.runDE(argv[2], crrntMonthMrktData);
   }
 
 

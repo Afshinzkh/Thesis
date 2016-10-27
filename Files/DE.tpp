@@ -5,8 +5,7 @@ namespace Calibration
 {
 
   template < size_t N >
-  void DE::runDE(std::string methodName,
-            std::array<double, N> const &crrntMonthMrktData)
+  void DE::runDE(std::array<double, N> const &crrntMonthMrktData)
   {
   	// Select the DE Parameters as follows, NP  : Population Size >= 4
       //                                      F   : Scale Factor
