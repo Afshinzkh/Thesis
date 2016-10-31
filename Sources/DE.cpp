@@ -5,13 +5,15 @@ namespace Calibration
 {
   #define boundaryMIN 0.000001;
 
-  template < size_t N >
   void DE::runDE(std::string methodName,
-            std::array<double, N> const &crrntMonthMrktData)
+            std::array<double, 9> const &crrntMonthMrktData,
+            std::array<double, 9> &crrntMonthMdlData,
+          double *alpha, double *beta, double *sigma)
   {
   	// Select the DE Parameters as follows, NP  : Population Size >= 4
     //                                      F   : Scale Factor
   	//                                      CR  : Crossover Ratio [0,1]
+
 
       const int NP = 15;
       double F = 0.85;
@@ -26,8 +28,8 @@ namespace Calibration
       // Define the Random Generator here
       // to get random values for model Parameters e.g. alpha, beta, sigma
       // Upper and Lower bounds for them are also defined here
-      std::array<double, 3> upperBound = {12.0, 0.005, 1};
-      std::array<double, 3> lowerBound = {0.0, 0.0001, 0.0};
+      std::array<double, 3> upperBound = {12.0, 0.05, 1};
+      std::array<double, 3> lowerBound = {0.0, 0.00001, 0.00001};
 
       // Pick Random Variables for model parameters
       // P[i][0] = a random double value for alpha with restrictions 0<alpha<12
@@ -48,11 +50,10 @@ namespace Calibration
         P[i][2] = sigmaRands(gen);
       }
 
-
       // Define Tolerance for Error
       double tol = 0.00001;
       double avgError = 1.0;
-      int maxIter = 60;
+      int maxIter = 50;
       int iter = 0;
       int loopCount = 0;
 
@@ -63,7 +64,11 @@ namespace Calibration
       // } else {
       //   v.reset(new risklab)
       // }
-      auto v = new Vasicek;
+
+      std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
+    	// Initialize r0 to a given value;
+    	double r0 = 0.0006;
+      auto v = new Vasicek(r0, tau);
 
       // The loop of DE Starts Here
       while (tol < avgError && iter < maxIter)
@@ -74,8 +79,12 @@ namespace Calibration
           double pError [NP];
           double sum = 0.0;
           for(int i = 0; i < NP; i++)
+
           {
-              pError[i] = v->run(P[i][0], P[i][1], P[i][2], crrntMonthMrktData);
+
+              v->setParameters(P[i][0], P[i][1], P[i][2]);
+              v->setMrktArray(crrntMonthMrktData);
+              pError[i] = v->run();
               sum += pError[i];
           }
 
@@ -153,7 +162,10 @@ namespace Calibration
           double crError [NP];
           for(int i = 0; i < NP; i++)
           {
-              crError[i] = v->run(crP[i][0], crP[i][1], crP[i][2], crrntMonthMrktData);
+              v->setParameters(crP[i][0], crP[i][1], crP[i][2]);
+              v->setMrktArray(crrntMonthMrktData);
+              crError[i] = v->run();
+              // crError[i] = v->run(crP[i][0], crP[i][1], crP[i][2], crrntMonthMrktData);
           }
 
           // Now you can compare the Error and if the error of one crossover population
@@ -181,24 +193,23 @@ namespace Calibration
         finBeta += P[i][1];
         finSigma += P[i][2];
       }
-      finAlpha = finAlpha/NP;
-      finBeta = finBeta/NP;
-      finSigma = finSigma/NP;
+      *alpha = finAlpha/NP;
+      *beta = finBeta/NP;
+      *sigma = finSigma/NP;
 
-      std::cout << "\nfinal alpha:" <<  finAlpha <<std::endl;
-      std::cout << "final beta:" << finBeta <<std::endl;
-      std::cout << "final sigma:" << finSigma <<std::endl;
+      std::cout << "\nfinal alpha:" <<  *alpha <<std::endl;
+      std::cout << "final beta:" << *beta <<std::endl;
+      std::cout << "final sigma:" << *sigma <<std::endl;
 
       std::cout << "Average Error for Calculation loop :" << loopCount;
       std::cout << "\t is : " << avgError << std::endl;
 
       // JUST A TEST TO GET THE FINAL YIELDS
-      double r1 = v->nextRate(0.0006, finAlpha, finBeta, finSigma);
-      std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
-      std::array<double,9> y;
+      double r1 = v->nextRate();
+      // std::array<double,9> y;
       for (size_t i = 0; i < 9; i++) {
-        y[i] = v->getYield(r1, finAlpha, finBeta, finSigma, tau[i]);
-        std::cout << "y for maturity: "  << tau[i] << "\t is: \t" << y[i] << std::endl;
+        crrntMonthMdlData[i] = v->getYield(r1, tau[i]);
+        std::cout << "y for maturity: "  << tau[i] << "\t is: \t" << crrntMonthMdlData[i] << std::endl;
       }
       // TODO: get return values from deMain as a double array
   }

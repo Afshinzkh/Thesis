@@ -87,7 +87,10 @@ int main(int argc, char* argv[])
     crrntMonthMrktData = mrktData[seriesCount-1-i];
     std::cout << "=============================" << std::endl;
     std::cout << "Running DE for :" << monthNames[i] << std::endl;
-    d.runDE(argv[2], crrntMonthMrktData); // in DE.tpp file
+    d.runDE(argv[2], crrntMonthMrktData, modelYields[i], &(alphaArray[i]),
+    &(betaArray[i]), &(sigmaArray[i])); // in DE.tpp file
+    std::cout << "e.g alpha: " <<  alphaArray[i] << "beta: " << betaArray[i]
+    << "sigma: " << sigmaArray[i] << "yield:" << modelYields[i][0] << std::endl;
   }
 
 

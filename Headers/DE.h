@@ -10,11 +10,10 @@ namespace Calibration {
 
   class  DE{
     public:
-      template < size_t N >
       void runDE(std::string methodName,
-            std::array<double, N> const &crrntMonthMrktData);
+            std::array<double, 9> const &crrntMonthMrktData,
+            std::array<double, 9> &crrntMonthMdlData,
+          double *alpha, double *beta, double *sigma);
   };
 
 }
-
-#include "../Files/DE.tpp"

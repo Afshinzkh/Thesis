@@ -6,25 +6,27 @@
 #include <random>
 #include <limits>
 #include <algorithm>
-
+#include <iostream>
 
 namespace Calibration {
 
 
   class Vasicek{
     public:
-      // Vasicek();
-      double run(double alpha, double beta, double sigma,
-              std::array<double, 9> const &crrntMonthMrktData);
-      double nextRate(double r0, double alpha, double beta, double sigma);
-      double getYield(double r1, double alpha, double beta, double sigma, double tau);
+      double run();
+      double nextRate();
+      double getYield(double const& r1, double const& tau);
 
-      void setParameters(double a, double b, double s);
+      Vasicek(double const& rZero, std::array<double, 9> const& T );
+      void setParameters(double const& a, double const& b, double const& s);
+      void setMrktArray(std::array<double, 9> const& mrktData);
       double getError();
-      // void setMrktArray();
 
     private:
       double alpha, beta, sigma;
+      std::array<double, 9> crrntMonthMrktData;
+      std::array<double, 9> tau;
+      double r0;
       double error;
   };
 

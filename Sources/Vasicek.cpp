@@ -9,21 +9,17 @@ double inf = std::numeric_limits<double>::infinity();
 // with any Given Size
 
 
-double Vasicek::run(double alpha, double beta, double sigma,
-								std::array<double, 9> const &crrntMonthMrktData)
+double Vasicek::run()
 {
 
 	const int maturityCount = 9; // TODO: think of this
-	std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
-
-	// Initialize r0 to a given value;
-	double r0 = 0.0006;
+	// std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
+	// double r0 = 0.0006;
 
 	// Initialize 3 random values for mean reversion rate :	    alpha
 									  // long term mean :		beta
 									  // volatility : 			sigma
  // Values are Taken from DE algorithm
-
  /****************************************************************************/
  /******************** STEP 1 : Calculate r1 *********************************/
  /****************************************************************************/
@@ -50,7 +46,7 @@ double Vasicek::run(double alpha, double beta, double sigma,
 
 	for(int i = 0; i < scenarioCount; i++)
 	{
-		r1[i] = nextRate(r0,alpha,beta,sigma);
+		r1[i] = nextRate();
 	}
 
 
@@ -68,7 +64,7 @@ double Vasicek::run(double alpha, double beta, double sigma,
 	{
 		for (int j = 0; j < maturityCount; j++)
 		{
-			y[i][j] = getYield(r1[i], alpha, beta, sigma, tau[j]);
+			y[i][j] = getYield(r1[i], tau[j]);
 		}
 	}
 	// now we average the matrix for each maturity and
@@ -87,14 +83,9 @@ double Vasicek::run(double alpha, double beta, double sigma,
 		sum = 0.0;
 	}
 
-	// for (int j = 0; j < maturityCount; j++)
-	// {
-	// 	std::cout << "Model: " <<  crrntMonthMdlData[j];
-	// 	std::cout << "\t Market:" <<  crrntMonthMrktData[j] << std::endl;
-	// }
 
 	/****************************************************************************/
-	/******************** STEP 4 : Get THE Error ********************************/
+	/******************** STEP 3 : Get THE Error ********************************/
 	/****************************************************************************/
 	// now that we have this average we can compare it
 	// with crrntMonthMrktData which is e.g. Jan. 2015;
@@ -105,22 +96,11 @@ double Vasicek::run(double alpha, double beta, double sigma,
 	}
 	error = error/maturityCount;
 
-	// check the error
-	// if (error < tolerance)
-		// take values of alpha, beta, sigma
-		// pit them into their assigned arrayes
-		// a[1] = ... b[1] = ... s[1] = ...
-		// and copy the crrntMonthMdlData to our finalYields which is a matrix of e.g. [12 * 9]
-		// and here we just fill in for the first row e.g. jan 2015;
-		// and then go for the next month e.g. Feb.15
-	// else
-		// try another alpha, beta, sigma, r0
-		// getchar();
-
 		return error;
-}
+} // Vasicek::run
 
-double Vasicek::nextRate(double r0, double alpha, double beta, double sigma)
+
+double Vasicek::nextRate()
 {
 		double delta_r;
 		double deltaT = 1.0/12.0;
@@ -128,36 +108,20 @@ double Vasicek::nextRate(double r0, double alpha, double beta, double sigma)
 	 	std::mt19937 gen(rd());
 	 	std::normal_distribution<> d(0.0,1.0);
 
-		long double randomVariable = d(gen);
+		double randomVariable = d(gen);
 		// long double r1 = r0 * std::exp(-alpha*deltaT) + beta * (1 - std::exp(-alpha*deltaT))\
 		// + sigma * std::sqrt((1 - std::exp(-2*alpha*deltaT))/(2*alpha)) * randomVariable;
 		// make delta_r with one step deltaT = 1/12;
 		delta_r = alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomVariable;
 
 		return r0 + delta_r;
-}
+} // vasicek::nextRate
 
-// void vasicekDescritize( const std::array<T,size>& r0, std::array<T,size>& alpha,
-// 								std::array<T,size>& beta, std::array<T,size>& sigma,
-// 								std::array<T,size>& r1)
-// {
-// 		double delta_r;
-// 		double deltaT = 1.0/12.0;
-// 		std::random_device rd;
-// 	 	std::mt19937 gen(rd());
-// 	 	std::normal_distribution<> d(0,1);
-// 		std::array <double, r0.size()> randomVariable;
-// 		randomVariable.fill(d(gen));
-// 		// make delta_r with one step deltaT = 1/12;
-// 		delta_r = alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomVariable;
-//
-// 		return r0 + delta_r;
-// }
 
-double Vasicek::getYield(double r1, double alpha, double beta, double sigma, double tau)
+double Vasicek::getYield(double const& r1, double const& tau)
 {
-		long double yield;
-		long double A,B,bondPrice;
+		double yield;
+		double A,B,bondPrice;
 
 		// TODO: The formulations for A and B are taken from "Options, feauters
 		// and other derivatives" book. "A" some times is so small that it becomes zero
@@ -170,10 +134,8 @@ double Vasicek::getYield(double r1, double alpha, double beta, double sigma, dou
 
 		bondPrice = A*std::exp(-r1*B);
 		if (bondPrice == 0)	bondPrice = 0.000001;
-		// std::cout << "alpha: " << alpha << " beta: " << beta << " sigma: " << sigma << std::endl;
-		  // std::cout << "A is: " << A << " B is: " << B << std::endl;
-		yield = (std::pow(-tau,-1))*std::log(bondPrice);
-		//
+
+		yield = ((-1/tau)*std::log(bondPrice));
 
 		// TODO: A might be too small that makes yield to become infinity
 		// I made it long double but still sometimes it becoms inf
@@ -181,18 +143,34 @@ double Vasicek::getYield(double r1, double alpha, double beta, double sigma, dou
 		if(yield == -inf) yield = -10;
 
 		return yield;
+	} //Vasicek::getYield
+
+
+/****************************************************************************/
+/******************** Setters and Getters are here **************************/
+/****************************************************************************/
+	Vasicek::Vasicek(double const& rZero, std::array<double, 9> const& T)
+	{
+		r0 = rZero;
+		tau = T;
 	}
 
-	void Vasicek::setParameters(double a, double b, double s)
+	void Vasicek::setParameters(double const& a, double const& b, double const& s)
 	{
 		alpha = a;
 		beta = b;
 		sigma = s;
 	}
 
+	void Vasicek::setMrktArray(std::array<double, 9> const& mrktData)
+	{
+		crrntMonthMrktData = mrktData;
+	}
+
 	double Vasicek::getError()
 	{
 		return error;
 	}
+
 
 } // namespace Vasicek
