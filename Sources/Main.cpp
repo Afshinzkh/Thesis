@@ -42,6 +42,7 @@ int main(int argc, char* argv[])
   std::array<double , seriesCount> alphaArray;
   std::array<double , seriesCount> betaArray;
   std::array<double , seriesCount> sigmaArray;
+  std::array<double , seriesCount> errorArray;
 
   // Define the array that stores the final modelYields
   std::array< std::array< double, maturityCount>, seriesCount> modelYields;
@@ -89,20 +90,32 @@ int main(int argc, char* argv[])
     std::cout << "Running DE for :" << monthNames[i] << std::endl;
     d.setMrktArray(crrntMonthMrktData);
     d.runDE();
+    alphaArray[i] = d.getAlpha();
+    betaArray[i] = d.getBeta();
+    sigmaArray[i] = d.getSigma();
+    errorArray[i] = d.getError();
+    modelYields[i] = d.getMdlArray();
+
   }
 
   /****************************************************************************/
 	/*************************** STEP 4 : Print Out *****************************/
 	/****************************************************************************/
 
-  // 
-  // std::cout << "\nfinal alpha:" <<  alpha <<std::endl;
-  // std::cout << "final beta:" << beta <<std::endl;
-  // std::cout << "final sigma:" << sigma <<std::endl;
-  //
-  // std::cout << "Average Error for Calculation loop :" << loopCount;
-  // std::cout << "\t is : " << avgError << std::endl;
-  // std::cout << "y for maturity: "  << tau[i] << "\t is: \t" << crrntMonthMdlData[i] << std::endl;
+  for(int i = 0; i < seriesCount; i++)
+  {
+    std::cout << "\nfinal alpha:" <<  alphaArray[i] <<std::endl;
+    std::cout << "final beta:" << betaArray[i] <<std::endl;
+    std::cout << "final sigma:" << sigmaArray[i] <<std::endl;
+    std::cout << "Average Error for month :" << monthNames[i];
+    std::cout << "\t is : " << errorArray[i] << std::endl;
+
+    for (size_t j = 0; j < 9; j++) {
+      std::cout << "y for maturity: "  << tau[j] << "\t is: \t" << modelYields[i][j] << std::endl;
+    }
+  }
+
+
 
   return 0;
 }

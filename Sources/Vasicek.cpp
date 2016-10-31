@@ -41,6 +41,7 @@ double inf = std::numeric_limits<double>::infinity();
 		// sigmaArray.fill(sigma);
 		// r0Array.fill(r0);
 
+
 		for(int i = 0; i < scenarioCount; i++)
 		{
 			r1[i] = nextRate();
@@ -86,7 +87,7 @@ double inf = std::numeric_limits<double>::infinity();
 	/****************************************************************************/
 	// now that we have this average we can compare it
 	// with crrntMonthMrktData which is e.g. Jan. 2015;
-		double error = 0.0;
+		error = 0.0;
 		for (int i = 0; i < maturityCount; i++)
 		{
 			error += std::pow((crrntMonthMdlData[i] - crrntMonthMrktData[i]),2) ;

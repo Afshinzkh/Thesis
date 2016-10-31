@@ -18,7 +18,6 @@ namespace Calibration
     double F = 0.85;
     double CR = 0.7;
 
-
     // Creat a population matrix P with the size of [NP * mpCount]
     // where mpCount is the count of Model Parameters;
     // e.g. for vasicek it is 3 for alpha, beta and sigma
@@ -55,7 +54,7 @@ namespace Calibration
 
     // Define Tolerance for Error
     double tol = 0.00001;
-    double avgError = 1.0;
+    avgError = 1.0;
     int maxIter = 50;
     int iter = 0;
     int loopCount = 0;
@@ -226,6 +225,26 @@ namespace Calibration
       crrntMonthMdlData[i] = v->getYield(r1, tau[i]);
     }
 
+  /****************************************************************************/
+	/*************************** STEP 4 : Print Out *****************************/
+	/****************************************************************************/
+
+      std::cout << "\nfinal alpha:" <<  alpha <<std::endl;
+      std::cout << "final beta:" << beta <<std::endl;
+      std::cout << "final sigma:" << sigma <<std::endl;
+      std::cout << "Average Error for loop :" << loopCount;
+      std::cout << "\t is : " << avgError << std::endl;
+
+      for (size_t j = 0; j < 9; j++) {
+        std::cout << "y for maturity: "  << tau[j] << "\t is: \t" << crrntMonthMdlData[j] << std::endl;
+      }
+
+
+
+
+
+
+
   }// DE::runDE
 
 /****************************************************************************/
@@ -240,6 +259,7 @@ namespace Calibration
   const double& DE::getAlpha() const { return alpha; }
   const double& DE::getBeta() const { return beta; }
   const double& DE::getSigma() const { return sigma; }
+  const double& DE::getError() const { return avgError; }
 
   const std::array<double, 9>& DE::getMdlArray() const
   {
