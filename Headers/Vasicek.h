@@ -13,14 +13,14 @@ namespace Calibration {
 
   class Vasicek{
     public:
-      double run();
+      void run();
       double nextRate();
       double getYield(double const& r1, double const& tau);
 
       Vasicek(double const& rZero, std::array<double, 9> const& T );
       void setParameters(double const& a, double const& b, double const& s);
       void setMrktArray(std::array<double, 9> const& mrktData);
-      double getError();
+      const double& getError() const;
 
     private:
       double alpha, beta, sigma;

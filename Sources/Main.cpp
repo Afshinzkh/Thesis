@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
   std::array< std::array< double, maturityCount>, seriesCount> modelYields;
 
   /****************************************************************************/
-	/******************** STEP 1 : Read the Data ********************************/
+	/******************** STEP 2 : Read the Data ********************************/
 	/****************************************************************************/
   // read the data from file e.g. for 12 month
   // it is a matrix named mrktData and has the size of
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
   // calculates the Error for each time-serie we have
 
   // define the Differential Evolution object
-  DE d;
+  DE d(argv[2]);
 
   // This is just for current beauty
   std::array <std::string, seriesCount> monthNames = {
@@ -87,12 +87,22 @@ int main(int argc, char* argv[])
     crrntMonthMrktData = mrktData[seriesCount-1-i];
     std::cout << "=============================" << std::endl;
     std::cout << "Running DE for :" << monthNames[i] << std::endl;
-    d.runDE(argv[2], crrntMonthMrktData, modelYields[i], &(alphaArray[i]),
-    &(betaArray[i]), &(sigmaArray[i])); // in DE.tpp file
-    std::cout << "e.g alpha: " <<  alphaArray[i] << "beta: " << betaArray[i]
-    << "sigma: " << sigmaArray[i] << "yield:" << modelYields[i][0] << std::endl;
+    d.setMrktArray(crrntMonthMrktData);
+    d.runDE();
   }
 
+  /****************************************************************************/
+	/*************************** STEP 4 : Print Out *****************************/
+	/****************************************************************************/
+
+  // 
+  // std::cout << "\nfinal alpha:" <<  alpha <<std::endl;
+  // std::cout << "final beta:" << beta <<std::endl;
+  // std::cout << "final sigma:" << sigma <<std::endl;
+  //
+  // std::cout << "Average Error for Calculation loop :" << loopCount;
+  // std::cout << "\t is : " << avgError << std::endl;
+  // std::cout << "y for maturity: "  << tau[i] << "\t is: \t" << crrntMonthMdlData[i] << std::endl;
 
   return 0;
 }
