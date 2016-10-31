@@ -26,8 +26,8 @@ namespace Calibration
       // Define the Random Generator here
       // to get random values for model Parameters e.g. alpha, beta, sigma
       // Upper and Lower bounds for them are also defined here
-      std::array<double, 3> upperBound = {12.0, 1, 1};
-      std::array<double, 3> lowerBound = {0.0, 0.0, 0.0};
+      std::array<double, 3> upperBound = {12.0, 0.005, 1};
+      std::array<double, 3> lowerBound = {0.0, 0.0001, 0.0};
 
       // Pick Random Variables for model parameters
       // P[i][0] = a random double value for alpha with restrictions 0<alpha<12
@@ -83,11 +83,12 @@ namespace Calibration
           avgError = sum/NP;
           loopCount++;
 
-            std::cout << " * " << std::flush;
-          if (loopCount % 10 == 0 )
-             std::cout << std::endl;
+          //   std::cout << " * " << std::flush;
+          // if (loopCount % 10 == 0 )
+          //    std::cout << std::endl;
 
-
+             std::cout << "Average Error for Calculation loop :" << loopCount;
+             std::cout << "\t is : " << avgError << std::endl;
           // Do the Mutation Stage as follows
           // define a mutated population as mutP
           std::array< std::array <long double, mpCount> , NP > mutP;

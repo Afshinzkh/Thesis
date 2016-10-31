@@ -13,7 +13,7 @@ namespace Calibration {
 
   class Vasicek{
     public:
-      Vasicek();
+      // Vasicek();
       double run(double alpha, double beta, double sigma,
               std::array<double, 9> const &crrntMonthMrktData);
       double nextRate(double r0, double alpha, double beta, double sigma);
