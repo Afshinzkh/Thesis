@@ -57,7 +57,7 @@ namespace Calibration
     avgError = 1.0;
     int maxIter = 50;
     int iter = 0;
-    int loopCount = 0;
+    loopCount = 0;
 
     //TODO: add the risklab class and choose them like this
     // std::shared_ptr<Base> v;
@@ -260,6 +260,7 @@ namespace Calibration
   const double& DE::getBeta() const { return beta; }
   const double& DE::getSigma() const { return sigma; }
   const double& DE::getError() const { return avgError; }
+  const double& DE::getIter() const { return loopCount; }
 
   const std::array<double, 9>& DE::getMdlArray() const
   {

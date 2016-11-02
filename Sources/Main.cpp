@@ -43,6 +43,8 @@ int main(int argc, char* argv[])
   std::array<double , seriesCount> betaArray;
   std::array<double , seriesCount> sigmaArray;
   std::array<double , seriesCount> errorArray;
+  std::array<double , seriesCount> iterArray;
+  std::array<double , seriesCount> timeArray;
 
   // Define the array that stores the final modelYields
   std::array< std::array< double, maturityCount>, seriesCount> modelYields;
@@ -95,6 +97,7 @@ int main(int argc, char* argv[])
     sigmaArray[i] = d.getSigma();
     errorArray[i] = d.getError();
     modelYields[i] = d.getMdlArray();
+    iterArray[i] = d.getIter();
 
   }
 
@@ -115,6 +118,8 @@ int main(int argc, char* argv[])
     }
   }
 
+  writeData(modelYields, mrktData, alphaArray, betaArray, sigmaArray,
+          errorArray, iterArray, timeArray);
 
 
   return 0;
