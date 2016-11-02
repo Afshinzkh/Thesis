@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
   std::array<double , seriesCount> iterArray;
   std::array<double , seriesCount> timeArray;
 
-  // Define the array that stores the final modelYields
-  std::array< std::array< double, maturityCount>, seriesCount> modelYields;
+  // Define the array that stores the final mdlData
+  std::array< std::array< double, maturityCount>, seriesCount> mdlData;
 
   /****************************************************************************/
 	/******************** STEP 2 : Read the Data ********************************/
@@ -96,8 +96,9 @@ int main(int argc, char* argv[])
     betaArray[i] = d.getBeta();
     sigmaArray[i] = d.getSigma();
     errorArray[i] = d.getError();
-    modelYields[i] = d.getMdlArray();
+    mdlData[i] = d.getMdlArray();
     iterArray[i] = d.getIter();
+    timeArray[i] = d.getTime();
 
   }
 
@@ -114,11 +115,11 @@ int main(int argc, char* argv[])
     std::cout << "\t is : " << errorArray[i] << std::endl;
 
     for (size_t j = 0; j < 9; j++) {
-      std::cout << "y for maturity: "  << tau[j] << "\t is: \t" << modelYields[i][j] << std::endl;
+      std::cout << "y for maturity: "  << tau[j] << "\t is: \t" << mdlData[i][j] << std::endl;
     }
   }
 
-  writeData(modelYields, mrktData, alphaArray, betaArray, sigmaArray,
+  writeData(mdlData, mrktData, alphaArray, betaArray, sigmaArray,
           errorArray, iterArray, timeArray);
 
 

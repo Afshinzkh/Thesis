@@ -45,6 +45,9 @@ namespace Calibration
     std::uniform_real_distribution<long double> betaRands(lowerBound[1],upperBound[1]);
     std::uniform_real_distribution<long double> sigmaRands(lowerBound[2],upperBound[2]);
 
+    // start the calculation time here
+    auto start = std::chrono::steady_clock::now();
+
     for(int i = 0; i < NP; i++)
     {
       P[i][0] = alphaRands(gen);
@@ -225,6 +228,10 @@ namespace Calibration
       crrntMonthMdlData[i] = v->getYield(r1, tau[i]);
     }
 
+    // end the Calculation time here
+    auto end = std::chrono::steady_clock::now();
+    std::chrono::duration<double> durationCount = end - start;
+    calTime = durationCount.count();
   /****************************************************************************/
 	/*************************** STEP 4 : Print Out *****************************/
 	/****************************************************************************/
@@ -261,6 +268,7 @@ namespace Calibration
   const double& DE::getSigma() const { return sigma; }
   const double& DE::getError() const { return avgError; }
   const double& DE::getIter() const { return loopCount; }
+  const double& DE::getTime() const { return calTime; }
 
   const std::array<double, 9>& DE::getMdlArray() const
   {
