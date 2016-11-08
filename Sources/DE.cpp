@@ -20,9 +20,22 @@ namespace Calibration
 
     // Creat a population matrix P with the size of [NP * mpCount]
     // where mpCount is the count of Model Parameters;
-    // e.g. for vasicek it is 3 for alpha, beta and sigma
-    const int mpCount = 3;
-    std::array< std::array <long double, mpCount> , NP > P;
+    // for vasicek it is 3 for alpha, beta and sigma
+    // for risklab it is 9 : alphaS, betaS, sigmaS, alphaY, betaY, sigmaY,
+    // sigmaZ, bY, bZ
+    int mpCount = 3;
+    if (methodName == "risklab")  mpCount = 9;
+    // std::array< std::array <double, mpCount> , NP > P;
+    std::vector < std::vector <double> > P(NP,std::vector<double> (mpCount,0));
+
+    // man meti ghazal to razi
+    // payam elahe pedram
+    // raoofi ashkan
+    // nokhod loobia goosht ostekhoon sib zamani goje limo amani
+    // rob e goje noon lavash sabzi khordan torobche
+    // piaz torshi litte
+    // ghablame bozorg
+
     // TODO: right now NP and mpcount cannot be private variables because they
     // are defining the array and the array cannot get non const
     // this will be fixed later that we do vectorization and shit
@@ -114,8 +127,8 @@ namespace Calibration
   /****************************************************************************/
         // Do the Mutation Stage as follows
         // define a mutated population as mutP
-        std::array< std::array <long double, mpCount> , NP > mutP;
-
+        // std::array< std::array <long double, mpCount> , NP > mutP;
+        std::vector < std::vector <double> > mutP(NP,std::vector<double> (mpCount,0));
         // Define the Random Generator here
         // to get random values for model Parameters e.g. alpha, beta, sigma
     	 	std::uniform_int_distribution<> indexRands(0,NP-1);
@@ -157,8 +170,8 @@ namespace Calibration
   /****************************************************************************/
         // Crossover the mutated with the origital Poupation
         // define a Crossover Population as crP
-        std::array< std::array <long double, mpCount> , NP > crP;
-
+        // std::array< std::array <long double, mpCount> , NP > crP;
+        std::vector < std::vector <double> > crP(NP,std::vector<double> (mpCount,0));
         // Define the random Distribution U(0,1)
         std::uniform_real_distribution<> crRands(0,1);
         // Define random intex for model parameter count
@@ -267,7 +280,7 @@ namespace Calibration
   const double& DE::getBeta() const { return beta; }
   const double& DE::getSigma() const { return sigma; }
   const double& DE::getError() const { return avgError; }
-  const double& DE::getIter() const { return loopCount; }
+  const int& DE::getIter() const { return loopCount; }
   const double& DE::getTime() const { return calTime; }
 
   const std::array<double, 9>& DE::getMdlArray() const
