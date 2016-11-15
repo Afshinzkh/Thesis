@@ -24,7 +24,7 @@ namespace Calibration
     // for risklab it is 9 : alphaS, betaS, sigmaS, alphaY, betaY, sigmaY,
     // sigmaZ, bY, bZ
     int mpCount = 3;
-    if (methodName == "risklab")  mpCount = 9;
+    // if (methodName == "risklab")  mpCount = 9;
     // std::array< std::array <double, mpCount> , NP > P;
     std::vector < std::vector <double> > P(NP,std::vector<double> (mpCount,0));
 
