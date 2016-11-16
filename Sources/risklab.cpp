@@ -8,7 +8,7 @@ namespace Calibration {
 	void risklab::run()
 	{
 
-		const int maturityCount = 9; // TODO: think of this
+		const int maturityCount = 8; // TODO: think of this
 		// std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
 		// double r0 = 0.0006;
 
@@ -179,7 +179,7 @@ namespace Calibration {
 /******************** Setters and Getters are here **************************/
 /****************************************************************************/
 	risklab::risklab(double const& rZero,double const& yZero,
-									 double const& zZero, std::array<double, 9> const& T)
+									 double const& zZero, std::array<double, 8> const& T)
 	{
 		r0 = rZero;
 		y0 = yZero;
@@ -201,14 +201,16 @@ namespace Calibration {
 		alphaY = ay;
 		betaY = by;
 		sigmaY = sy;
+		sigmaZ = sz;
 		weightY = wy;
 		weightZ = wz;
 	}
 
-	void risklab::setGDPParameters(double const& az, double const& bz)
+	void risklab::setGDPParameters(double const& az, double const& bz, double const& sz)
 	{
 		alphaZ = az;
 		betaZ = bz;
+		sigmaZ = sz;
 	}
 
 	void risklab::setMrktGDP(double const& mrktData)
@@ -216,7 +218,7 @@ namespace Calibration {
 		crrntMonthMrktGDP = mrktData;
 	}
 
-	void risklab::setMrktArray(std::array<double, 9> const& mrktData)
+	void risklab::setMrktArray(std::array<double, 8> const& mrktData)
 	{
 		crrntMonthMrktData = mrktData;
 	}

@@ -75,14 +75,6 @@ namespace Calibration
     int iter = 0;
     loopCount = 0;
 
-    //TODO: add the risklab class and choose them like this
-    // std::shared_ptr<Base> v;
-    //
-    // if(arg == "Vasicek") {
-    //   v.reset(new Vasicek)
-    // } else {
-    //   v.reset(new risklab)
-    // }
 
     std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
   	// Initialize r0 to a given value;

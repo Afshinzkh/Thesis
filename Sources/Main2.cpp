@@ -1,3 +1,9 @@
+//TODO: print out the results
+//TODO: add the real shitty formula
+//TODO: there should be a better solution for gdp
+
+
+
 #include "../Headers/risklab.h"
 #include "../Headers/risklabDE.h"
 #include "../Headers/Helper.h"
@@ -25,7 +31,7 @@ int main(int argc, char* argv[])
   // TODO: for now time-series length is 12 since we wanna get the values
   // for 12 months and maturity is 9 according to our data
   // Maturity [0.25, 1, 3, 5, 7, 10, 15, 20, 30]
-  const int maturityCount = 9;
+  const int maturityCount = 8;
   // // Jan 2015 bis Dec. 2015
   const int seriesCount = 12;
 
@@ -35,33 +41,33 @@ int main(int argc, char* argv[])
              0.023, 0.028, 0.019, 0.018, 0.011, 0.012};
 
   // Define an array for Model Parameters e.g. alphaZ, betaZ
-  std::vector<double> alphaZ(seriesCount);
-  std::vector<double> betaZ(seriesCount);
+  std::array<double , seriesCount> alphaZ;
+  std::array<double , seriesCount> betaZ;
   /****************************** for Spread *************************************/
   // Define time to maturity
-  std::vector<double> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
+  std::vector<double> tau = {1, 3, 5, 7, 10, 15, 20, 30};
   // std::cout << "Tau is " << tau[2] << std::endl;
 
   // Define an array for Model Parameters
   // that are 9 : alphaS, betaS, sigmaS, alphaY, betaY, sigmaY,
   // sigmaZ, bY, bZ
-  std::vector<double> alphaS(seriesCount);
-  std::vector<double> betaS(seriesCount);
-  std::vector<double> sigmaS(seriesCount);
-  std::vector<double> alphaY(seriesCount);
-  std::vector<double> betaY(seriesCount);
-  std::vector<double> sigmaY(seriesCount);
-  std::vector<double> sigmaZ(seriesCount);
-  std::vector<double> weightY(seriesCount);
-  std::vector<double> weightZ(seriesCount);
+  std::array<double , seriesCount> alphaS;
+  std::array<double , seriesCount> betaS;
+  std::array<double , seriesCount> sigmaS;
+  std::array<double , seriesCount> alphaY;
+  std::array<double , seriesCount> betaY;
+  std::array<double , seriesCount> sigmaY;
+  std::array<double , seriesCount> sigmaZ;
+  std::array<double , seriesCount> weightY;
+  std::array<double , seriesCount> weightZ;
 
-  std::vector<double> errorVec(seriesCount);
-  std::vector<double> iterVec(seriesCount);
-  std::vector<double> timeVec(seriesCount);
+  std::array<double , seriesCount> errorArray;
+  std::array<double , seriesCount> iterArray;
+  std::array<double , seriesCount> timeArray;
 
   // Define the array that stores the final mdlData
-  std::vector<std::vector<double>> mdlData(seriesCount, std::vector<double> (maturityCount,0));
-
+  // std::vector<std::vector<double>> mdlData(seriesCount, std::vector<double> (maturityCount,0));
+  std::array<std::array<double,maturityCount>, seriesCount> mdlData;
   /****************************************************************************/
 	/******************** STEP 2 : Read the Data ********************************/
 	/****************************************************************************/
@@ -87,6 +93,7 @@ int main(int argc, char* argv[])
   // for each time-serie
   for(int i = 0; i < seriesCount; i++)
   {
+    auto start = std::chrono::steady_clock::now();
 
     // Fisrt Get the parameters for GDP
     std::cout << "=============================" << std::endl;
@@ -97,10 +104,10 @@ int main(int argc, char* argv[])
 
     // now go for the big DE
     crrntMonthMrktData = mrktData[seriesCount-1-i];
-    std::cout << "crrntMonthMrktData[2] = " << crrntMonthMrktData[2] << std::endl;
     d.setMrktArray(crrntMonthMrktData);
     d.runDE();
     std::cout << "*************** RAN ONE TIME **************" << '\n';
+    mdlData[i] = d.getMdlArray();
     alphaS[i] = d.getAlphaS();
     betaS[i] = d.getBetaS();
     sigmaS[i] = d.getSigmaS();
@@ -110,8 +117,12 @@ int main(int argc, char* argv[])
     sigmaZ[i] = d.getSigmaZ();
     weightY[i] = d.getWeightY();
     weightZ[i] = d.getWeightZ();
+    errorArray[i] = d.getError();
+    iterArray[i] = d.getIter();
 
-
+    auto end = std::chrono::steady_clock::now();
+    std::chrono::duration<double> durationCount = end - start;
+    timeArray[i] = durationCount.count();
 
   }
 
@@ -134,8 +145,11 @@ int main(int argc, char* argv[])
   //   }
   // }
   //
-  // writeData(mdlData, mrktData, alphaArray, betaArray, sigmaArray,
-  //         errorArray, iterArray, timeArray);
+  writeRisklabData(mdlData, mrktData, alphaS, betaS, sigmaS,
+                                      alphaY, betaY, sigmaY,
+                                      alphaZ, betaZ, sigmaZ,
+                                      weightY, weightZ,
+                                      errorArray, iterArray, timeArray);
 
 
   return 0;

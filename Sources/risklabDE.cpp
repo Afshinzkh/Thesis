@@ -70,7 +70,7 @@ namespace Calibration
     std::uniform_real_distribution<long double> weightRands(lowerBound[3],upperBound[3]);
 
     // start the calculation time here
-    auto start = std::chrono::steady_clock::now();
+
 
     for(int i = 0; i < NP; i++)
     {
@@ -106,7 +106,7 @@ namespace Calibration
     //   v.reset(new risklab)
     // }
 
-    std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
+    std::array<double,8> tau = {1, 3, 5, 7, 10, 15, 20, 30};
   	// Initialize r0 to a given value;
   	double r0 = 0.0006;
     double y0 = 0.0012;
@@ -116,7 +116,7 @@ namespace Calibration
 
     // set GDP parameters
 
-    r->setGDPParameters( alphaZ, betaZ );
+    r->setGDPParameters( alphaZ, betaZ, sigmaZ );
 /****************************************************************************/
 /******************** STEP 2 : DE LOOP **************************************/
 /****************************************************************************/
@@ -323,16 +323,13 @@ namespace Calibration
   /****************************************************************************/
   /***************** STEP 4 : Final Calculation *******************************/
   /****************************************************************************/
-    // //get the final values with final parameters
-    // double r1 = r->nextRate();
-    // for (size_t i = 0; i < 9; i++) {
-    //   crrntMonthMdlData[i] = r->getYield(r1, tau[i]);
-    // }
+    //get the final values with final parameters
+    double r1 = r->nextRate();
+    for (size_t i = 0; i < 9; i++) {
+      crrntMonthMdlData[i] = r->getYield(r1, tau[i]);
+    }
 
-    // end the Calculation time here
-    auto end = std::chrono::steady_clock::now();
-    std::chrono::duration<double> durationCount = end - start;
-    calTime = durationCount.count();
+
   /****************************************************************************/
 	/*************************** STEP 4 : Print Out *****************************/
 	/****************************************************************************/
@@ -376,38 +373,37 @@ namespace Calibration
     //                                      CR  : Crossover Ratio [0,1]
 
     const int NP = 15;
-    double F = 0.7;
-    double CR = 0.6;
+    double F = 0.9;
+    double CR = 0.8;
 
     // Creat a population matrix P with the size of [NP * mpCount]
     // where mpCount is the count of Model Parameters;
     // for vasicek it is 3 for alpha, beta and sigma
     // for GDP it is 2 : alphaZ, betaZ
-    int mpCount = 2;
+    int mpCount = 3;
 
     std::vector < std::vector <double> > P(NP,std::vector<double> (mpCount,0));
 
     // Define the Random Generator here
     // to get random values for model Parameters e.g. alpha, beta, sigma
     // Upper and Lower bounds for them are also defined here
-    std::array<double, 2> upperBound = {1.0, 0.05};
-    std::array<double, 2> lowerBound = {0.0, 0.00001};
+    std::array<double, 3> upperBound = {12.0, 0.1, 1};
+    std::array<double, 3> lowerBound = {0.0, 0.00001, 0.00001};
 
-    // Pick Random Variables for model parameters
-    // P[i][0] = a random double value for alpha with restrictions 0<alpha<12
-    // P[i][1] = a random double value for beta with restrictions beta in R
 
     // Define the Random Device
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<long double> alphaRands(lowerBound[0],upperBound[0]);
     std::uniform_real_distribution<long double> betaRands(lowerBound[1],upperBound[1]);
+    std::uniform_real_distribution<long double> sigmaRands(lowerBound[2],upperBound[2]);
     // start the calculation time here
 
     for(int i = 0; i < NP; i++)
     {
       P[i][0] = alphaRands(gen);
       P[i][1] = betaRands(gen);
+      P[i][2] = sigmaRands(gen);
     }
 
     // Define Tolerance for Error
@@ -415,10 +411,9 @@ namespace Calibration
     gdpError = 1.0;
     int maxIter = 10;
     int iter = 0;
-    loopCount = 0;
-
+    int count = 0;
     // Initialize z0 to a given value;
-    double z0 = 0.0006;
+    double z0 = 0.006;
     auto r = new risklab(z0);
 
   /****************************************************************************/
@@ -437,7 +432,7 @@ namespace Calibration
 
         {
 
-            r->setGDPParameters(P[i][0], P[i][1]);
+            r->setGDPParameters(P[i][0], P[i][1], P[i][2]);
             r->setMrktGDP(MrktGDP);
             r->getGDP();
             pError[i] = r->getGDPError();
@@ -446,9 +441,9 @@ namespace Calibration
 
         // compute the average Error
         gdpError = sum/NP;
-        loopCount++;
+        count++;
 
-        std::cout << "Average Error for GDP loop :" << loopCount;
+        std::cout << "Average Error for GDP loop :" << count;
         std::cout << "\t is : " << gdpError << std::endl;
 
   /****************************************************************************/
@@ -486,6 +481,12 @@ namespace Calibration
             if(mutP[i][1] < lowerBound[1])
                 mutP[i][1] = lowerBound[1] + boundaryMIN;
 
+            mutP[i][2] = P[id1][2] + F * (P[id2][2] - P[id3][2]);
+            if(mutP[i][2] > upperBound[2])
+                mutP[i][2] = upperBound[2] - boundaryMIN;
+            if(mutP[i][2] < lowerBound[2])
+                mutP[i][2] = lowerBound[2] + boundaryMIN;
+
         }
 
   /****************************************************************************/
@@ -515,7 +516,7 @@ namespace Calibration
         double crError [NP];
         for(int i = 0; i < NP; i++)
         {
-            r->setGDPParameters(crP[i][0], crP[i][1]);
+            r->setGDPParameters(crP[i][0], crP[i][1], crP[i][2]);
             r->setMrktGDP(MrktGDP);
             r->getGDP();
             crError[i] = r->getGDPError();
@@ -530,6 +531,7 @@ namespace Calibration
             {
                P[i][0] = crP[i][0];
                P[i][1] = crP[i][1];
+               P[i][2] = crP[i][2];
             }
         }
         // So with this new P you can again check the error and go ahead and repeat
@@ -542,19 +544,23 @@ namespace Calibration
     // Print out the final Values and also add them to the main arrays
     double finAlphaZ = 0.0;
     double finBetaZ = 0.0;
+    double finSigmaZ = 0.0;
     for(int i = 0; i < NP; i++)
     {
       finAlphaZ += P[i][0];
       finBetaZ += P[i][1];
+      finSigmaZ += P[i][2];
     }
     // Copy them to private values
     alphaZ = finAlphaZ/NP;
     betaZ = finBetaZ/NP;
+    sigmaZ = finSigmaZ/NP;
 
 
       std::cout << "\nfinal alphaZ:" <<  alphaZ <<std::endl;
       std::cout << "final betaZ:" << betaZ <<std::endl;
-      std::cout << "Average Error for loop :" << loopCount;
+      std::cout << "final sigmaZ:" << sigmaZ <<std::endl;
+      std::cout << "Average Error for loop :" << count;
       std::cout << "\t is : " << gdpError << std::endl;
       std::cout << "final GDP:" << r->getTheGDP() <<std::endl;
 
@@ -593,12 +599,12 @@ namespace Calibration
   const int& risklabDE::getIter() const { return loopCount; }
   const double& risklabDE::getTime() const { return calTime; }
 
-  const std::array<double, 9>& risklabDE::getMdlArray() const
+  const std::array<double, 8>& risklabDE::getMdlArray() const
   {
     return crrntMonthMdlData;
   }
 
-  void risklabDE::setMrktArray(std::array<double, 9> const& mrktData)
+  void risklabDE::setMrktArray(std::array<double, 8> const& mrktData)
   {
     crrntMonthMrktData = mrktData;
   }
