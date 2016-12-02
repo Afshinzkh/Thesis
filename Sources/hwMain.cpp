@@ -1,5 +1,5 @@
-#include "../Headers/Vasicek.h"
-#include "../Headers/DE.h"
+#include "../Headers/HullWhite.h"
+#include "../Headers/hwDE.h"
 #include "../Headers/Helper.h"
 
 using namespace Calibration;
@@ -15,40 +15,40 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  // if(argv[2] != std::string("vasicek") && argv[2] != std::string("risklab")  )
-  // {
-  //   std::cout << "Error: Wrong Method Name" << std::endl;
-  //   return -1;
-  // }
-
-  std::cout << "Method to use: Vasicek" << std::endl;
+  std::cout << "Method to use: HullWhite" << std::endl;
 
 
 
   /****************************************************************************/
   /******************** STEP 1 : Initialize variables *************************/
-  /****************************************************************************/
   // TODO: for now time-series length is 12 since we wanna get the values
   // for 12 months and maturity is 9 according to our data
   // Maturity [0.25, 1, 3, 5, 7, 10, 15, 20, 30]
   const int maturityCount = 9;
-  // Jan 2015 bis Dec. 2015
+  // // Jan 2015 bis Dec. 2015
   const int seriesCount = 12;
 
+  /****************************** for Spread *************************************/
   // Define time to maturity
-  std::array<double,maturityCount> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
+  std::vector<double> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
+  // std::cout << "Tau is " << tau[2] << std::endl;
 
-  // Define an array for Model Parameters e.g. alpha, beta, sigma
-  std::array<double , seriesCount> alphaArray;
-  std::array<double , seriesCount> betaArray;
-  std::array<double , seriesCount> sigmaArray;
+  // Define an array for Model Parameters
+  // that are 9 : alphaS, betaS, sigmaS, alphaY, betaY, sigmaY,
+  // sigmaZ, bY, bZ
+  std::array<double , seriesCount> alpha1;
+  std::array<double , seriesCount> sigma1;
+  std::array<double , seriesCount> alpha2;
+  std::array<double , seriesCount> sigma2;
+  std::array<double , seriesCount> rho;
+
   std::array<double , seriesCount> errorArray;
   std::array<double , seriesCount> iterArray;
   std::array<double , seriesCount> timeArray;
 
   // Define the array that stores the final mdlData
-  std::array< std::array< double, maturityCount>, seriesCount> mdlData;
-
+  // std::vector<std::vector<double>> mdlData(seriesCount, std::vector<double> (maturityCount,0));
+  std::array<std::array<double,maturityCount>, seriesCount> mdlData;
   /****************************************************************************/
 	/******************** STEP 2 : Read the Data ********************************/
 	/****************************************************************************/
@@ -63,64 +63,60 @@ int main(int argc, char* argv[])
   // An array of [1 * maturityCount] that holds only the current month values
     std::array<double,maturityCount> crrntMonthMrktData;
 
-  // TODO: here you have to get the first argument of main as file name
   readData(argv[1], mrktData);
-
   /****************************************************************************/
 	/*************************** STEP 2 : Run DE ********************************/
 	/****************************************************************************/
-  // Here we call the DE functions to run over the data
-  // main DE function which is called runDE implments the DE algorithm and
-  // calculates the Error for each time-serie we have
 
-  // define the Differential Evolution object
-  DE d(argv[2]);
+  hwDE d;
 
-  // This is just for current beauty
-  std::array <std::string, seriesCount> monthNames = {
-    "Jan.2015", "Feb.2015", "Mar.2015", "Apr.2015", "May.2015",
-    "Jun.2015", "Jul.2015", "Aug.2015", "Sep.2015", "Oct.2015",
-    "Nov.2015", "Dec.2015"
-  };
-
-  // Call the Differential Evolution Function
   // for each time-serie
   for(int i = 0; i < seriesCount; i++)
   {
+    auto start = std::chrono::steady_clock::now();
+
+    // now go for the big DE
     crrntMonthMrktData = mrktData[seriesCount-1-i];
-    std::cout << "=============================" << std::endl;
-    std::cout << "Running DE for :" << monthNames[i] << std::endl;
     d.setMrktArray(crrntMonthMrktData);
     d.runDE();
-    alphaArray[i] = d.getAlpha();
-    betaArray[i] = d.getBeta();
-    sigmaArray[i] = d.getSigma();
-    errorArray[i] = d.getError();
+    std::cout << "*************** RAN ONE TIME **************" << '\n';
     mdlData[i] = d.getMdlArray();
+    alpha1[i] = d.getAlpha1();
+    sigma1[i] = d.getSigma1();
+    alpha2[i] = d.getAlpha2();
+    sigma2[i] = d.getSigma2();
+    rho[i] = d.getRho();
+    errorArray[i] = d.getError();
     iterArray[i] = d.getIter();
-    timeArray[i] = d.getTime();
+
+    auto end = std::chrono::steady_clock::now();
+    std::chrono::duration<double> durationCount = end - start;
+    timeArray[i] = durationCount.count();
 
   }
+
+
 
   /****************************************************************************/
 	/*************************** STEP 4 : Print Out *****************************/
 	/****************************************************************************/
+  //TODO: print out the results
 
-  for(int i = 0; i < seriesCount; i++)
-  {
-    std::cout << "\nfinal alpha:" <<  alphaArray[i] <<std::endl;
-    std::cout << "final beta:" << betaArray[i] <<std::endl;
-    std::cout << "final sigma:" << sigmaArray[i] <<std::endl;
-    std::cout << "Average Error for month :" << monthNames[i];
-    std::cout << "\t is : " << errorArray[i] << std::endl;
-
-    for (size_t j = 0; j < 9; j++) {
-      std::cout << "y for maturity: "  << tau[j] << "\t is: \t" << mdlData[i][j] << std::endl;
-    }
-  }
-
-  writeData(mdlData, mrktData, alphaArray, betaArray, sigmaArray,
-          errorArray, iterArray, timeArray);
+  // for(int i = 0; i < seriesCount; i++)
+  // {
+  //   std::cout << "\nfinal alpha:" <<  alphaArray[i] <<std::endl;
+  //   std::cout << "final beta:" << betaArray[i] <<std::endl;
+  //   std::cout << "final sigma:" << sigmaArray[i] <<std::endl;
+  //   std::cout << "Average Error for month :" << monthNames[i];
+  //   std::cout << "\t is : " << errorArray[i] << std::endl;
+  //
+  //   for (size_t j = 0; j < 9; j++) {
+  //     std::cout << "y for maturity: "  << tau[j] << "\t is: \t" << mdlData[i][j] << std::endl;
+  //   }
+  // }
+  //
+  writeHullWhiteData(mdlData, mrktData, alpha1, sigma1, alpha2, sigma2, rho,
+                                      errorArray, iterArray, timeArray);
 
 
   return 0;

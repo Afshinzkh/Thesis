@@ -1,9 +1,9 @@
 #include "../Headers/HullWhite.h"
-
-int main()
-{
-  return 0;
-}
+// 
+// int main()
+// {
+//   return 0;
+// }
 
 namespace Calibration {
 double inf = std::numeric_limits<double>::infinity();
@@ -30,8 +30,9 @@ void HullWhite::run()
 
   for(int i = 0; i < scenarioCount; i++)
   {
-    r1[i] = nextRRate();
+    generateRandoms();
     u1[i] = nextURate();
+    r1[i] = nextRRate(u1[i]);
   }
 
 
@@ -79,18 +80,51 @@ void HullWhite::run()
 
 } // HullWhite::run
 
-double HullWhite::nextRRate()
+
+double HullWhite::generateRandoms()
+{
+    // Generate the random variables with correlation rho
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::normal_distribution<> d(0.0,1.0);
+
+    double normalVar1 = d(gen);
+    double normalVar2 = d(gen);
+
+    rRandom = normalVar1;
+    uRandom = rho * normalVar1 + std::sqrt(1 - rho * rho) * normalVar2;
+}
+
+
+double HullWhite::nextRRate(double u1)
 {
   //TODO: implement!
+  // first we need to calculate theta function.
+  // and for this we need F(0,T) which is actually which is R(0,T)
+  // and R(0,T) is actually crrntMonthMrktData. I am just telling the story
+  // of name confusions here!
+  // for now we give F0T a general value
+  //  consider T-t = 0.25 - 0.0 = 0.25
+  double F0T = 0.0012;
+  double deltaT = 1.0/12.0;
+  double theta;
+  theta = alpha1 * F0T + F0T/(0.25) + sigma1 * sigma1 / 2 / alpha1
+                  * (1 - std::exp(-2 * alpha1 * 0.25));
+
+  double r1;
+  r1 = r0 + (theta + u1 - r0 * alpha1) * deltaT + sigma1
+                              * std::sqrt(deltaT) * rRandom;
 
   return -1.0;
 } // HullWhite::nextRRate
 
 double HullWhite::nextURate()
 {
-  //TODO: implement!
+  double u1;
+  double deltaT = 1.0/12.0;
+  u1 = sigma2 * std::sqrt(deltaT) * uRandom;
 
-  return -1.0;
+  return u1;
 } // HullWhite::nextURate
 
 
