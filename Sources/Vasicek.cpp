@@ -6,10 +6,15 @@ namespace Calibration {
 double inf = std::numeric_limits<double>::infinity();
 
 
+
+//TODO: rNext should be calculated for each month so what should i do is:
+// when I run DE for each month, there I have to have an rNext
+
+
 	void Vasicek::run()
 	{
 
-		const int maturityCount = 9; // TODO: think of this
+		const int maturityCount = 9;
 		// std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
 		// double r0 = 0.0006;
 
@@ -17,68 +22,17 @@ double inf = std::numeric_limits<double>::infinity();
 		// long term mean :		beta
 		// volatility : 			sigma
 	 // Values are Taken from DE algorithm
-	 /****************************************************************************/
-	 /******************** STEP 1 : Calculate r1 *********************************/
-	 /****************************************************************************/
-		// Use Monte Carlo idea for vasicek/risklab Descritization to calculate r1
-		// Here we call the vasicekDescritize Function with alpha, beta, sigma, r0 as inputs
-		// and output would be a vector of r1 with scenarioCount: number of scenarios
-		// r1 [scenarioCount * 1]
-		// if we consider r0 as the short rate for previous month e.g. Dec. 2014
-		// then r1 would be actually the short interest rate for the next month
-		// which is our current Month e.g. Jan. 2015
-		const int scenarioCount = 1000; // should be eventually 10000
-		std::array<double,scenarioCount> r1;
-		// here we call the vasicekDescritize or risklabDescritize Function
-		//  to get the short rates r1
-		// TODO: take out of loop and vectorize instead
-		// std::array < double, scenarioCount> alphaArray;
-		// std::array < double, scenarioCount> betaArray;
-		// std::array < double, scenarioCount> sigmaArray;
-		// std::array < double, scenarioCount> r0Array;
-		// alphaArray.fill(alpha);
-		// betaArray.fill(beta);
-		// sigmaArray.fill(sigma);
-		// r0Array.fill(r0);
-
-
-		for(int i = 0; i < scenarioCount; i++)
-		{
-			r1[i] = nextRate();
-		}
-
 
 		/****************************************************************************/
 		/******************** STEP 2 : Get Model Yield ******************************/
 		/****************************************************************************/
 		// Now that we have r1 we can use it to calculate the yield for each maturity;
 		// remember maturityCount is the number of maturities, so we will have a matrix of
-		// y [scenarioCount * maturityCount] as it is calulating yield for e.g. 9 different maturities
-		// and e.g. 10000 different scenarios
-		// we use vasicekYield/risklabYield formula to get these values
-		// inputs are tau, alpha, beta, sigma, r1 ; output is yield
-		std::array< std::array <double, maturityCount > , scenarioCount > y;
-		for(int i = 0; i < scenarioCount; i++)
-		{
-			for (int j = 0; j < maturityCount; j++)
-			{
-				y[i][j] = getYield(r1[i], tau[j]);
-			}
-		}
-		// now we average the matrix for each maturity and
-		// we get our final model yield for the current month;
-		// auto crrntMonthMdlData = new double[1 * maturityCount];
-		double sum = 0.0;
 		std::array<double, maturityCount> crrntMonthMdlData;
 
-		for (int j = 0; j < maturityCount; j++)
+		for (int i = 0; i < maturityCount; ++i)
 		{
-			for(int i = 0; i < scenarioCount; i++)
-			{
-				sum += y[i][j]; // TODO: look for eigen matrix for 2D
-			}
-			crrntMonthMdlData[j] = sum/scenarioCount;
-			sum = 0.0;
+				crrntMonthMdlData[i] = getYield(tau[i]);
 		}
 
 
@@ -90,7 +44,8 @@ double inf = std::numeric_limits<double>::infinity();
 		error = 0.0;
 		for (int i = 0; i < maturityCount; i++)
 		{
-			error += std::pow((crrntMonthMdlData[i] - crrntMonthMrktData[i]),2) ;
+			error += (crrntMonthMdlData[i] - crrntMonthMrktData[i])
+			 						* (crrntMonthMdlData[i] - crrntMonthMrktData[i]);
 		}
 		error = error/maturityCount;
 
@@ -99,23 +54,39 @@ double inf = std::numeric_limits<double>::infinity();
 
 	double Vasicek::nextRate()
 	{
-		double delta_r;
+
 		double deltaT = 1.0/12.0;
+		const int scenarioCount = 10000; // should be eventually 10000
+		std::array<double,scenarioCount> delta_r;
+		std::array<double,scenarioCount> randomArray;
+		// here we call the vasicekDescritize or risklabDescritize Function
+		//  to get the short rates rate
+
 		std::random_device rd;
 	 	std::mt19937 gen(rd());
 	 	std::normal_distribution<> d(0.0,1.0);
+		for (int i = 0; i < scenarioCount; ++i) {
+				randomArray[i] = d(gen);
+		}
 
-		double randomVariable = d(gen);
-		// long double r1 = r0 * std::exp(-alpha*deltaT) + beta * (1 - std::exp(-alpha*deltaT))\
-		// + sigma * std::sqrt((1 - std::exp(-2*alpha*deltaT))/(2*alpha)) * randomVariable;
 		// make delta_r with one step deltaT = 1/12;
-		delta_r = alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomVariable;
+		int index = 0;
+		double rSum = 0.0;
+		for(auto& num: delta_r)
+		{
+		 delta_r[index] = alpha * (beta - rNext) * deltaT + sigma * std::sqrt(deltaT) * randomArray[index];
+		 ++index;
+		 rSum += delta_r[index];
+	 }
+		//  rate = rNext + delta_r;
+		double deltaR = rSum / scenarioCount;
 
-		return r0 + delta_r;
+		rNext = rNext + deltaR;
+		return rNext;
 	} // vasicek::nextRate
 
 
-	double Vasicek::getYield(double const& r1, double const& tau)
+	double Vasicek::getYield(double const& tau)
 	{
 		double yield;
 		double A,B,bondPrice;
@@ -129,7 +100,7 @@ double inf = std::numeric_limits<double>::infinity();
 		A = std::exp(((B - tau)*(std::pow(alpha,2)*beta - 0.5*std::pow(sigma,2))\
 		/std::pow(alpha,2)) - (std::pow(sigma,2)*std::pow(B,2)/(4*alpha)));
 
-		bondPrice = A*std::exp(-r1*B);
+		bondPrice = A*std::exp(-rNext*B);
 		if (bondPrice == 0)	bondPrice = 0.000001;
 
 		yield = ((-1/tau)*std::log(bondPrice));
@@ -148,7 +119,7 @@ double inf = std::numeric_limits<double>::infinity();
 /****************************************************************************/
 	Vasicek::Vasicek(double const& rZero, std::array<double, 9> const& T)
 	{
-		r0 = rZero;
+		rNext = rZero;
 		tau = T;
 	}
 

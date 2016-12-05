@@ -66,6 +66,7 @@ int main(int argc, char* argv[])
   // TODO: here you have to get the first argument of main as file name
   readData(argv[1], mrktData);
 
+  double r0 = 0.0006;
   /****************************************************************************/
 	/*************************** STEP 2 : Run DE ********************************/
 	/****************************************************************************/
@@ -74,7 +75,7 @@ int main(int argc, char* argv[])
   // calculates the Error for each time-serie we have
 
   // define the Differential Evolution object
-  DE d(argv[2]);
+  DE d;
 
   // This is just for current beauty
   std::array <std::string, seriesCount> monthNames = {
@@ -85,13 +86,16 @@ int main(int argc, char* argv[])
 
   // Call the Differential Evolution Function
   // for each time-serie
+  double newR = r0;
   for(int i = 0; i < seriesCount; i++)
   {
     crrntMonthMrktData = mrktData[seriesCount-1-i];
     std::cout << "=============================" << std::endl;
     std::cout << "Running DE for :" << monthNames[i] << std::endl;
     d.setMrktArray(crrntMonthMrktData);
-    d.runDE();
+    std::cout << "R is:" << newR <<'\n';
+    newR = d.runDE(newR);
+    std::cout << "R is:" << newR <<'\n';
     alphaArray[i] = d.getAlpha();
     betaArray[i] = d.getBeta();
     sigmaArray[i] = d.getSigma();
@@ -99,6 +103,7 @@ int main(int argc, char* argv[])
     mdlData[i] = d.getMdlArray();
     iterArray[i] = d.getIter();
     timeArray[i] = d.getTime();
+    getchar();
 
   }
 

@@ -5,7 +5,7 @@ namespace Calibration
 {
   #define boundaryMIN 0.000001;
 
-  void DE::runDE()
+  double DE::runDE(double const& newR)
   {
  /****************************************************************************/
  /******************** STEP 1 : Initialize *********************************/
@@ -14,7 +14,7 @@ namespace Calibration
     //                                      F   : Scale Factor
   	//                                      CR  : Crossover Ratio [0,1]
 
-    const int NP = 15;
+    const int NP = 100;
     double F = 0.85;
     double CR = 0.7;
 
@@ -27,14 +27,6 @@ namespace Calibration
     // if (methodName == "risklab")  mpCount = 9;
     // std::array< std::array <double, mpCount> , NP > P;
     std::vector < std::vector <double> > P(NP,std::vector<double> (mpCount,0));
-
-    // man meti ghazal to razi
-    // payam elahe pedram
-    // raoofi ashkan
-    // nokhod loobia goosht ostekhoon sib zamani goje limo amani
-    // rob e goje noon lavash sabzi khordan torobche
-    // piaz torshi litte
-    // ghablame bozorg
 
     // TODO: right now NP and mpcount cannot be private variables because they
     // are defining the array and the array cannot get non const
@@ -69,18 +61,20 @@ namespace Calibration
     }
 
     // Define Tolerance for Error
-    double tol = 0.00001;
+    double tol = 0.0000001;
     avgError = 1.0;
-    int maxIter = 50;
+    int maxIter = 100;
     int iter = 0;
     loopCount = 0;
 
 
     std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
   	// Initialize r0 to a given value;
-  	double r0 = 0.0006;
-    auto v = new Vasicek(r0, tau);
-
+  	//double r0 = 0.0006;
+    double r_new;
+    auto v = new Vasicek(newR, tau);
+    r_new = v->nextRate();
+    // rNext
 /****************************************************************************/
 /******************** STEP 2 : DE LOOP **************************************/
 /****************************************************************************/
@@ -228,9 +222,9 @@ namespace Calibration
   /***************** STEP 4 : Final Calculation *******************************/
   /****************************************************************************/
     //get the final values with final parameters
-    double r1 = v->nextRate();
+    v->setParameters(alpha, beta, sigma);
     for (size_t i = 0; i < 9; i++) {
-      crrntMonthMdlData[i] = v->getYield(r1, tau[i]);
+      crrntMonthMdlData[i] = v->getYield(tau[i]);
     }
 
     // end the Calculation time here
@@ -254,6 +248,7 @@ namespace Calibration
 
 
 
+      return r_new;
 
 
 
@@ -263,9 +258,8 @@ namespace Calibration
 /******************** Setters and Getters are here **************************/
 /****************************************************************************/
 
-  DE::DE(std::string const& mName)
+  DE::DE()
   {
-    methodName = mName;
   }
 
   const double& DE::getAlpha() const { return alpha; }
