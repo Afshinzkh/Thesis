@@ -5,7 +5,7 @@ namespace Calibration
 {
   #define boundaryMIN 0.000001;
 
-  double DE::runDE(double const& newR)
+  double DE::runDE(double newR)
   {
  /****************************************************************************/
  /******************** STEP 1 : Initialize *********************************/
@@ -14,9 +14,9 @@ namespace Calibration
     //                                      F   : Scale Factor
   	//                                      CR  : Crossover Ratio [0,1]
 
-    const int NP = 100;
-    double F = 0.85;
-    double CR = 0.7;
+    const int NP = 20;
+    double F = 0.7;
+    double CR = 0.6;
 
     // Creat a population matrix P with the size of [NP * mpCount]
     // where mpCount is the count of Model Parameters;
@@ -61,7 +61,7 @@ namespace Calibration
     }
 
     // Define Tolerance for Error
-    double tol = 0.0000001;
+    double tol = 0.000001;
     avgError = 1.0;
     int maxIter = 100;
     int iter = 0;
@@ -69,12 +69,10 @@ namespace Calibration
 
 
     std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
-  	// Initialize r0 to a given value;
-  	//double r0 = 0.0006;
-    double r_new;
+    // newR would be the return value for the newR in main.cpp
+    // at first loop in main.cpp it is r0 and then it gets its value from rNext
     auto v = new Vasicek(newR, tau);
-    r_new = v->nextRate();
-    // rNext
+
 /****************************************************************************/
 /******************** STEP 2 : DE LOOP **************************************/
 /****************************************************************************/
@@ -93,6 +91,7 @@ namespace Calibration
 
             v->setParameters(P[i][0], P[i][1], P[i][2]);
             v->setMrktArray(crrntMonthMrktData);
+            v->nextRate();
             v->run();
             pError[i] = v->getError();
             sum += pError[i];
@@ -180,6 +179,7 @@ namespace Calibration
         {
             v->setParameters(crP[i][0], crP[i][1], crP[i][2]);
             v->setMrktArray(crrntMonthMrktData);
+            v->nextRate();
             v->run();
             crError[i] = v->getError();
             // crError[i] = v->run(crP[i][0], crP[i][1], crP[i][2], crrntMonthMrktData);
@@ -223,6 +223,8 @@ namespace Calibration
   /****************************************************************************/
     //get the final values with final parameters
     v->setParameters(alpha, beta, sigma);
+    v->nextRate();
+    newR = v->getNewR();
     for (size_t i = 0; i < 9; i++) {
       crrntMonthMdlData[i] = v->getYield(tau[i]);
     }
@@ -245,13 +247,7 @@ namespace Calibration
         std::cout << "y for maturity: "  << tau[j] << "\t is: \t" << crrntMonthMdlData[j] << std::endl;
       }
 
-
-
-
-      return r_new;
-
-
-
+      return newR;
   }// DE::runDE
 
 /****************************************************************************/

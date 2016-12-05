@@ -5,24 +5,19 @@ namespace Calibration {
 
 double inf = std::numeric_limits<double>::infinity();
 
-
-
-//TODO: rNext should be calculated for each month so what should i do is:
-// when I run DE for each month, there I have to have an rNext
-
-
-	void Vasicek::run()
-	{
+void Vasicek::run()
+{
 
 		const int maturityCount = 9;
-		// std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
-		// double r0 = 0.0006;
-
 		// Initialize 3 random values for mean reversion rate :	alpha
 		// long term mean :		beta
 		// volatility : 			sigma
 	 // Values are Taken from DE algorithm
 
+	 /****************************************************************************/
+	 /******************** STEP 1 : Get next Rate ********************************/
+	 /****************************************************************************/
+	 	// This step has been moved to de.cpp where we call nextRate function
 		/****************************************************************************/
 		/******************** STEP 2 : Get Model Yield ******************************/
 		/****************************************************************************/
@@ -52,16 +47,21 @@ double inf = std::numeric_limits<double>::infinity();
 	} // Vasicek::run
 
 
-	double Vasicek::nextRate()
+	void Vasicek::nextRate()
 	{
+		// Monte carlo method is used here
+		// we generate e.g. 10000 random variables
+		// and then we calculate 10000 delta_r using vasicek short rate model
+		// we average the delta_r and add it to rZero
+		// this would be our next short rate or rNext
+		// Note: rZero evolves for each month, it is being taken from de.cpp
 
 		double deltaT = 1.0/12.0;
-		const int scenarioCount = 10000; // should be eventually 10000
+		const int scenarioCount = 10000;
 		std::array<double,scenarioCount> delta_r;
 		std::array<double,scenarioCount> randomArray;
-		// here we call the vasicekDescritize or risklabDescritize Function
-		//  to get the short rates rate
 
+		// Generate random Array with N(0,1)
 		std::random_device rd;
 	 	std::mt19937 gen(rd());
 	 	std::normal_distribution<> d(0.0,1.0);
@@ -74,15 +74,13 @@ double inf = std::numeric_limits<double>::infinity();
 		double rSum = 0.0;
 		for(auto& num: delta_r)
 		{
-		 delta_r[index] = alpha * (beta - rNext) * deltaT + sigma * std::sqrt(deltaT) * randomArray[index];
+		 delta_r[index] = alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomArray[index];
 		 ++index;
 		 rSum += delta_r[index];
 	 }
-		//  rate = rNext + delta_r;
 		double deltaR = rSum / scenarioCount;
 
-		rNext = rNext + deltaR;
-		return rNext;
+		rNext = r0 + deltaR;
 	} // vasicek::nextRate
 
 
@@ -93,8 +91,7 @@ double inf = std::numeric_limits<double>::infinity();
 
 		// TODO: The formulations for A and B are taken from "Options, feauters
 		// and other derivatives" book. "A" some times is so small that it becomes zero
-		// that's why it might lead to a infinity yield value. that's why I made them
-		// long double. maybe there is a better solution to that ....
+		// that's why it might lead to a infinity yield value.
 
 		B = (1-std::exp(-alpha*tau))/alpha;
 		A = std::exp(((B - tau)*(std::pow(alpha,2)*beta - 0.5*std::pow(sigma,2))\
@@ -105,8 +102,6 @@ double inf = std::numeric_limits<double>::infinity();
 
 		yield = ((-1/tau)*std::log(bondPrice));
 
-		// TODO: A might be too small that makes yield to become infinity
-		// I made it long double but still sometimes it becoms inf
 		if(yield == inf)	yield = 10;
 		if(yield == -inf) yield = -10;
 
@@ -119,7 +114,7 @@ double inf = std::numeric_limits<double>::infinity();
 /****************************************************************************/
 	Vasicek::Vasicek(double const& rZero, std::array<double, 9> const& T)
 	{
-		rNext = rZero;
+		r0 = rZero;
 		tau = T;
 	}
 
@@ -138,6 +133,11 @@ double inf = std::numeric_limits<double>::infinity();
 	const double& Vasicek::getError() const
 	{
 		return error;
+	}
+
+	const double& Vasicek::getNewR() const
+	{
+		return rNext;
 	}
 
 

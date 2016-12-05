@@ -15,15 +15,7 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  // if(argv[2] != std::string("vasicek") && argv[2] != std::string("risklab")  )
-  // {
-  //   std::cout << "Error: Wrong Method Name" << std::endl;
-  //   return -1;
-  // }
-
   std::cout << "Method to use: Vasicek" << std::endl;
-
-
 
   /****************************************************************************/
   /******************** STEP 1 : Initialize variables *************************/
@@ -63,7 +55,7 @@ int main(int argc, char* argv[])
   // An array of [1 * maturityCount] that holds only the current month values
     std::array<double,maturityCount> crrntMonthMrktData;
 
-  // TODO: here you have to get the first argument of main as file name
+  // get the first argument of main as file name
   readData(argv[1], mrktData);
 
   double r0 = 0.0006;
@@ -84,18 +76,23 @@ int main(int argc, char* argv[])
     "Nov.2015", "Dec.2015"
   };
 
+  // this varibale the the next shortRate which is taken from last monthNames
+  // at first it is r0 and then it gets updated for each month
+  double newR = r0;
+
   // Call the Differential Evolution Function
   // for each time-serie
-  double newR = r0;
   for(int i = 0; i < seriesCount; i++)
   {
     crrntMonthMrktData = mrktData[seriesCount-1-i];
     std::cout << "=============================" << std::endl;
     std::cout << "Running DE for :" << monthNames[i] << std::endl;
     d.setMrktArray(crrntMonthMrktData);
-    std::cout << "R is:" << newR <<'\n';
+    // std::cout '<< "newR is:" << newR << '\n';
+    // getchar();'
     newR = d.runDE(newR);
-    std::cout << "R is:" << newR <<'\n';
+    // getchar();
+    // std::cout << "newR is:" << newR << '\n';
     alphaArray[i] = d.getAlpha();
     betaArray[i] = d.getBeta();
     sigmaArray[i] = d.getSigma();
@@ -103,8 +100,6 @@ int main(int argc, char* argv[])
     mdlData[i] = d.getMdlArray();
     iterArray[i] = d.getIter();
     timeArray[i] = d.getTime();
-    getchar();
-
   }
 
   /****************************************************************************/
@@ -118,7 +113,8 @@ int main(int argc, char* argv[])
     std::cout << "final sigma:" << sigmaArray[i] <<std::endl;
     std::cout << "Average Error for month :" << monthNames[i];
     std::cout << "\t is : " << errorArray[i] << std::endl;
-
+    std::cout << "Elapsed Time: " << timeArray[i] << std::endl;
+    std::cout << "Number of Iterations: " << iterArray[i] << std::endl;
     for (size_t j = 0; j < 9; j++) {
       std::cout << "y for maturity: "  << tau[j] << "\t is: \t" << mdlData[i][j] << std::endl;
     }
