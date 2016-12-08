@@ -5,14 +5,8 @@ namespace Calibration
 {
   #define boundaryMIN 0.000001;
 
-  void hwDE::runDE()
+  double hwDE::runDE( double newR )
   {
-
-// TODO:first I need to run a whole DE to find the best short rate for GDP
-// this would be a simple vasicek nextRate calculation and check if it
-// is close to the value I have for my GDP
-// the value for gdp should be read from what I will take from internet
-// monthly gdp of a country (sth between 0.5 to 4 %)
 
  /****************************************************************************/
  /******************** STEP 1 : Initialize *********************************/
@@ -76,7 +70,7 @@ namespace Calibration
     // Define Tolerance for Error
     double tol = 0.00001;
     avgError = 1.0;
-    int maxIter = 50;
+    int maxIter = 100;
     int iter = 0;
     loopCount = 0;
 
@@ -84,10 +78,8 @@ namespace Calibration
 
 
     std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
-  	// Initialize r0 to a given value;
-  	double r0 = 0.0006;
-    // auto v = new Vasicek(r0, tau);
-    auto hw = new HullWhite(r0, tau);
+
+    auto hw = new HullWhite(newR, tau);
 
 /****************************************************************************/
 /******************** STEP 2 : DE LOOP **************************************/

@@ -28,7 +28,6 @@ int main(int argc, char* argv[])
   // // Jan 2015 bis Dec. 2015
   const int seriesCount = 12;
 
-  /****************************** for Spread *************************************/
   // Define time to maturity
   std::vector<double> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
   // std::cout << "Tau is " << tau[2] << std::endl;
@@ -67,6 +66,11 @@ int main(int argc, char* argv[])
   /****************************************************************************/
 	/*************************** STEP 2 : Run DE ********************************/
 	/****************************************************************************/
+  double r0 = 0.0006;
+  // this varibale the the next shortRate which is taken from last monthNames
+  // at first it is r0 and then it gets updated for each month
+  double newR = r0;
+
 
   hwDE d;
 
@@ -78,8 +82,7 @@ int main(int argc, char* argv[])
     // now go for the big DE
     crrntMonthMrktData = mrktData[seriesCount-1-i];
     d.setMrktArray(crrntMonthMrktData);
-    d.runDE();
-    std::cout << "*************** RAN ONE TIME **************" << '\n';
+    newR = d.runDE(newR);
     mdlData[i] = d.getMdlArray();
     alpha1[i] = d.getAlpha1();
     sigma1[i] = d.getSigma1();

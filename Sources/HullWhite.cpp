@@ -1,5 +1,5 @@
 #include "../Headers/HullWhite.h"
-// 
+//
 // int main()
 // {
 //   return 0;
@@ -12,17 +12,10 @@ double inf = std::numeric_limits<double>::infinity();
 void HullWhite::run()
 {
 
-  const int maturityCount = 9; // TODO: think of this
+  const int maturityCount = 9;
  /****************************************************************************/
  /******************** STEP 1 : Calculate r1 & u1 ****************************/
  /****************************************************************************/
-  // Use Monte Carlo idea for vasicek/risklab Descritization to calculate r1
-  // Here we call the vasicekDescritize Function with alpha, beta, sigma, r0 as inputs
-  // and output would be a vector of r1 with scenarioCount: number of scenarios
-  // r1 [scenarioCount * 1]
-  // if we consider r0 as the short rate for previous month e.g. Dec. 2014
-  // then r1 would be actually the short interest rate for the next month
-  // which is our current Month e.g. Jan. 2015
   const int scenarioCount = 1000; // should be eventually 10000
   std::array<double,scenarioCount> r1;
   std::array<double,scenarioCount> u1;

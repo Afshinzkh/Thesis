@@ -14,8 +14,8 @@ namespace Calibration
     //                                      F   : Scale Factor
   	//                                      CR  : Crossover Ratio [0,1]
 
-    const int NP = 20;
-    double F = 0.7;
+    const int NP = 80;
+    double F = 0.8;
     double CR = 0.6;
 
     // Creat a population matrix P with the size of [NP * mpCount]
