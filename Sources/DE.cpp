@@ -99,6 +99,7 @@ namespace Calibration
         // compute the average Error
         avgError = sum/NP;
         loopCount++;
+        if(avgError < tol)  break;
 
         //   std::cout << " * " << std::flush;
         // if (loopCount % 10 == 0 )
