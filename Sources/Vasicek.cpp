@@ -40,7 +40,7 @@ void Vasicek::run()
 		for (int i = 0; i < maturityCount; i++)
 		{
 			error += (crrntMonthMdlData[i] - crrntMonthMrktData[i])
-			 						* (crrntMonthMdlData[i] - crrntMonthMrktData[i]);
+									 	* (crrntMonthMdlData[i] - crrntMonthMrktData[i]);
 		}
 		error = error/maturityCount;
 

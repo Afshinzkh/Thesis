@@ -88,11 +88,7 @@ int main(int argc, char* argv[])
     std::cout << "=============================" << std::endl;
     std::cout << "Running DE for :" << monthNames[i] << std::endl;
     d.setMrktArray(crrntMonthMrktData);
-    // std::cout '<< "newR is:" << newR << '\n';
-    // getchar();'
     newR = d.runDE(newR);
-    // getchar();
-    // std::cout << "newR is:" << newR << '\n';
     alphaArray[i] = d.getAlpha();
     betaArray[i] = d.getBeta();
     sigmaArray[i] = d.getSigma();

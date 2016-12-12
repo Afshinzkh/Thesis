@@ -14,9 +14,10 @@ namespace Calibration
     //                                      F   : Scale Factor
   	//                                      CR  : Crossover Ratio [0,1]
 
-    const int NP = 80;
-    double F = 0.8;
-    double CR = 0.6;
+
+    const int NP = 40;
+    double F = 0.5;
+    double CR = 0.5;
 
     // Creat a population matrix P with the size of [NP * mpCount]
     // where mpCount is the count of Model Parameters;
@@ -35,7 +36,7 @@ namespace Calibration
     // Define the Random Generator here
     // to get random values for model Parameters e.g. alpha, beta, sigma
     // Upper and Lower bounds for them are also defined here
-    std::array<double, 3> upperBound = {12.0, 0.05, 1};
+    std::array<double, 3> upperBound = {0.25, 0.03, 0.005};
     std::array<double, 3> lowerBound = {0.0, 0.00001, 0.00001};
 
     // Pick Random Variables for model parameters
@@ -61,7 +62,7 @@ namespace Calibration
     }
 
     // Define Tolerance for Error
-    double tol = 0.000001;
+    double tol = 0.00000081;
     avgError = 1.0;
     int maxIter = 100;
     int iter = 0;
@@ -76,14 +77,13 @@ namespace Calibration
 /****************************************************************************/
 /******************** STEP 2 : DE LOOP **************************************/
 /****************************************************************************/
-
+    double pError [NP];
 
     while (tol < avgError && iter < maxIter)
     {
         // Calculate the Vasicek/risklab Error for each of these populations
         // input alpha, beta, sigma; output : error;
 
-        double pError [NP];
         double sum = 0.0;
         for(int i = 0; i < NP; i++)
 
@@ -96,7 +96,6 @@ namespace Calibration
             pError[i] = v->getError();
             sum += pError[i];
         }
-
         // compute the average Error
         avgError = sum/NP;
         loopCount++;
@@ -128,7 +127,6 @@ namespace Calibration
             while (id1 == i)  id1 = indexRands(gen);
             while (id2 == i || id2 == id1) id2 = indexRands(gen);
             while (id3 == i || id3 == id1 || id3 == id2) id3 = indexRands(gen);
-
             // Check the boundaries
             mutP[i][0] = P[id1][0] + F * (P[id2][0] - P[id3][0]);
             if(mutP[i][0] > upperBound[0])
@@ -149,7 +147,6 @@ namespace Calibration
                 mutP[i][2] = lowerBound[2] + boundaryMIN;
 
         }
-
   /****************************************************************************/
   /******************** STEP 4 : Crossover ************************************/
   /****************************************************************************/
@@ -172,7 +169,6 @@ namespace Calibration
                      crP[i][j] = P[i][j];
             }
         }
-
         // Now that we have the Crossover Population we can calculate it's Errors
         double crError [NP];
         for(int i = 0; i < NP; i++)
@@ -184,7 +180,6 @@ namespace Calibration
             crError[i] = v->getError();
             // crError[i] = v->run(crP[i][0], crP[i][1], crP[i][2], crrntMonthMrktData);
         }
-
         // Now you can compare the Error and if the error of one crossover population
         // is less than the error of one original population you copy that
         for(int i = 0; i < NP; i++)
@@ -197,26 +192,37 @@ namespace Calibration
             }
         }
         // So with this new P you can again check the error and go ahead and repeat
-
         iter++;
 
     }// end of while loop
-
-
-    // Print out the final Values and also add them to the main arrays
-    double finAlpha = 0.0;
-    double finBeta = 0.0;
-    double finSigma = 0.0;
-    for(int i = 0; i < NP; i++)
+    double finError = pError[0];
+    int smallestIndex;
+    for(int i = 1; i < NP; i++)
     {
-      finAlpha += P[i][0];
-      finBeta += P[i][1];
-      finSigma += P[i][2];
+      if(pError[i]<finError)
+      {
+        finError = pError[i];
+        smallestIndex = i;
+      }
     }
-    // Copy them to private values
-    alpha = finAlpha/NP;
-    beta = finBeta/NP;
-    sigma = finSigma/NP;
+    std::cout << "Smallest Error is: " << finError <<'\n';
+    alpha = P[smallestIndex][0];
+    beta = P[smallestIndex][1];
+    sigma = P[smallestIndex][2];
+    // Print out the final Values and also add them to the main arrays
+    // double finAlpha = 0.0;
+    // double finBeta = 0.0;
+    // double finSigma = 0.0;
+    // for(int i = 0; i < NP; i++)
+    // {
+    //   finAlpha += P[i][0];
+    //   finBeta += P[i][1];
+    //   finSigma += P[i][2];
+    // }
+    // // Copy them to private values
+    // alpha = finAlpha/NP;
+    // beta = finBeta/NP;
+    // sigma = finSigma/NP;
 
   /****************************************************************************/
   /***************** STEP 4 : Final Calculation *******************************/
