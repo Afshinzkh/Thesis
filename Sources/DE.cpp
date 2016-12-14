@@ -1,4 +1,5 @@
 #include "../Headers/Vasicek.h"
+#include "../Headers/CIR.h"
 #include "../Headers/DE.h"
 
 namespace Calibration
@@ -15,7 +16,7 @@ namespace Calibration
   	//                                      CR  : Crossover Ratio [0,1]
 
 
-    const int NP = 40;
+    const int NP = 80;
     double F = 0.5;
     double CR = 0.5;
 
@@ -72,18 +73,19 @@ namespace Calibration
     std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
     // newR would be the return value for the newR in main.cpp
     // at first loop in main.cpp it is r0 and then it gets its value from rNext
-    auto v = new Vasicek(newR, tau);
+    // auto v = new Vasicek(newR, tau);
+    auto v = new CIR(newR, tau);
 
 /****************************************************************************/
 /******************** STEP 2 : DE LOOP **************************************/
 /****************************************************************************/
     double pError [NP];
 
-    while (tol < avgError && iter < maxIter)
+    while ( iter < maxIter)
     {
         // Calculate the Vasicek/risklab Error for each of these populations
         // input alpha, beta, sigma; output : error;
-
+        // double pBest[3] = {P[0][0], P[0][1], P[0][2]}
         double sum = 0.0;
         for(int i = 0; i < NP; i++)
 

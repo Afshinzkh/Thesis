@@ -1,11 +1,11 @@
-#include "../Headers/Vasicek.h"
+#include "../Headers/CIR.h"
 
 namespace Calibration {
 
 
 double inf = std::numeric_limits<double>::infinity();
 
-void Vasicek::run()
+void CIR::run()
 {
 
 		const int maturityCount = 9;
@@ -47,7 +47,7 @@ void Vasicek::run()
 	} // Vasicek::run
 
 
-	void Vasicek::nextRate()
+	void CIR::nextRate()
 	{
 		// Monte carlo method is used here
 		// we generate e.g. 10000 random variables
@@ -74,68 +74,68 @@ void Vasicek::run()
 		double rSum = 0.0;
 		for(auto& num: delta_r)
 		{
-		 delta_r[index] = alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomArray[index];
+		 delta_r[index] = alpha * (beta - r0) * deltaT + sigma
+		  				* std::sqrt(deltaT) * std::sqrt(deltaT) * randomArray[index];
 		 ++index;
 		 rSum += delta_r[index];
 	 }
 		double deltaR = rSum / scenarioCount;
 
 		rNext = r0 + deltaR;
-	} // vasicek::nextRate
+	} // CIR::nextRate
 
 
-	double Vasicek::getYield(double const& tau)
+	double CIR::getYield(double const& tau)
 	{
 		double yield;
-		double A,B,bondPrice;
+		double A,B,Eta;
+		double aUp, bUp, denominator;
 
-		// TODO: The formulations for A and B are taken from "Options, feauters
-		// and other derivatives" book. "A" some times is so small that it becomes zero
-		// that's why it might lead to a infinity yield value.
+		Eta = std::sqrt(alpha * alpha + 2 * sigma * sigma);
+		denominator = 2 * Eta + (alpha + Eta) * (std::exp(tau * Eta) - 1);
+		bUp = 2 * (std::exp(tau * Eta) - 1);
+		aUp = 2 * Eta * std::exp(0.5 * (alpha + Eta) * tau) ;
 
-		B = (1.0-std::exp(-alpha*tau))/alpha;
-		A = std::exp(((B - tau)*(std::pow(alpha,2)*beta - 0.5*std::pow(sigma,2))\
-		/std::pow(alpha,2)) - (std::pow(sigma,2)*std::pow(B,2)/(4*alpha)));
+		B = bUp / denominator;
+		A = std::pow(aUp / denominator, 2 * alpha * beta / (sigma * sigma));
 
-		bondPrice = A*std::exp(-rNext*B);
-		if (bondPrice == 0)	bondPrice = 0.000001;
 
-		yield = ((-1.0/tau)*std::log(bondPrice));
+		yield = (1.0/tau)*(B * rNext - std::log(A));
 
 		if(yield == inf)	yield = 10;
 		if(yield == -inf) yield = -10;
 
 		return yield;
-	} //Vasicek::getYield
+	} //CIR::getYield
 
 
 /****************************************************************************/
 /******************** Setters and Getters are here **************************/
 /****************************************************************************/
-	Vasicek::Vasicek(double const& rZero, std::array<double, 9> const& T)
+	CIR::CIR(double const& rZero, std::array<double, 9> const& T)
 	{
 		r0 = rZero;
 		tau = T;
 	}
 
-	void Vasicek::setParameters(double const& a, double const& b, double const& s)
+	void CIR::setParameters(double const& a, double const& b, double const& s)
 	{
 		alpha = a;
 		beta = b;
 		sigma = s;
 	}
 
-	void Vasicek::setMrktArray(std::array<double, 9> const& mrktData)
+	void CIR::setMrktArray(std::array<double, 9> const& mrktData)
 	{
 		crrntMonthMrktData = mrktData;
 	}
 
-	const double& Vasicek::getError() const
+	const double& CIR::getError() const
 	{
 		return error;
 	}
 
-	const double& Vasicek::getNewR() const
+	const double& CIR::getNewR() const
 	{
 		return rNext;
 	}
