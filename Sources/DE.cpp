@@ -1,3 +1,4 @@
+#include "../Headers/Method.h"
 #include "../Headers/Vasicek.h"
 #include "../Headers/CIR.h"
 #include "../Headers/DE.h"
@@ -17,7 +18,7 @@ namespace Calibration
 
 
     const int NP = 80;
-    double F = 0.5;
+    double F = 0.7;
     double CR = 0.5;
 
     // Creat a population matrix P with the size of [NP * mpCount]
@@ -37,7 +38,7 @@ namespace Calibration
     // Define the Random Generator here
     // to get random values for model Parameters e.g. alpha, beta, sigma
     // Upper and Lower bounds for them are also defined here
-    std::array<double, 3> upperBound = {0.25, 0.03, 0.005};
+    std::array<double, 3> upperBound = {0.25, 0.05, 0.005};
     std::array<double, 3> lowerBound = {0.0, 0.00001, 0.00001};
 
     // Pick Random Variables for model parameters
@@ -63,9 +64,9 @@ namespace Calibration
     }
 
     // Define Tolerance for Error
-    double tol = 0.00000081;
+    double tol = 0.0000008;
     avgError = 1.0;
-    int maxIter = 100;
+    int maxIter = 50;
     int iter = 0;
     loopCount = 0;
 
@@ -74,7 +75,15 @@ namespace Calibration
     // newR would be the return value for the newR in main.cpp
     // at first loop in main.cpp it is r0 and then it gets its value from rNext
     // auto v = new Vasicek(newR, tau);
-    auto v = new CIR(newR, tau);
+    newR = crrntMonthMrktData[0] / 3.0;
+    std::cout << "R0 is: " << newR<< '\n';
+    auto v = new Vasicek(newR, tau);
+    // auto v = new Vasicek(newR , tau);
+    if (methodName == "cir")
+        auto v = new CIR(newR, tau);
+    //  else
+
+    // auto    v = new Vasicek(newR, tau);
 
 /****************************************************************************/
 /******************** STEP 2 : DE LOOP **************************************/
@@ -234,6 +243,7 @@ namespace Calibration
     v->setParameters(alpha, beta, sigma);
     v->nextRate();
     newR = v->getNewR();
+    // std::cout << "newR is : " << newR << '\n';
     for (size_t i = 0; i < 9; i++) {
       crrntMonthMdlData[i] = v->getYield(tau[i]);
     }
@@ -263,8 +273,9 @@ namespace Calibration
 /******************** Setters and Getters are here **************************/
 /****************************************************************************/
 
-  DE::DE()
+  DE::DE(std::string m)
   {
+    methodName = m;
   }
 
   const double& DE::getAlpha() const { return alpha; }

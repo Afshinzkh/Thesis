@@ -10,12 +10,13 @@ int main(int argc, char* argv[])
 {
 
   // Cheking the Arguments
-  if( argc != 2){
+  if( argc != 3){
     std::cout << "Error: Wrong number of Arguments" << std::endl;
     return -1;
   }
 
-  std::cout << "Method to use: Vasicek" << std::endl;
+  std::string method = argv[2];
+  std::cout << "Method to use: "<< method << std::endl;
 
   /****************************************************************************/
   /******************** STEP 1 : Initialize variables *************************/
@@ -58,7 +59,7 @@ int main(int argc, char* argv[])
   // get the first argument of main as file name
   readData(argv[1], mrktData);
 
-  double r0 = 0.0006;
+  double r0 = 0.0018;
   /****************************************************************************/
 	/*************************** STEP 2 : Run DE ********************************/
 	/****************************************************************************/
@@ -67,7 +68,7 @@ int main(int argc, char* argv[])
   // calculates the Error for each time-serie we have
 
   // define the Differential Evolution object
-  DE d;
+  DE d(method);
 
   // This is just for current beauty
   std::array <std::string, seriesCount> monthNames = {
@@ -117,7 +118,7 @@ int main(int argc, char* argv[])
   }
 
   writeData(mdlData, mrktData, alphaArray, betaArray, sigmaArray,
-          errorArray, iterArray, timeArray);
+          errorArray, iterArray, timeArray,method);
 
 
   return 0;

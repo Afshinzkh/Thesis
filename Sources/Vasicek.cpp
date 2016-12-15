@@ -112,33 +112,33 @@ void Vasicek::run()
 /****************************************************************************/
 /******************** Setters and Getters are here **************************/
 /****************************************************************************/
-	Vasicek::Vasicek(double const& rZero, std::array<double, 9> const& T)
-	{
-		r0 = rZero;
-		tau = T;
-	}
+	// Vasicek::Vasicek(double const& rZero, std::array<double, 9> const& T)
+	// {
+	// 	r0 = rZero;
+	// 	tau = T;
+	// }
 
-	void Vasicek::setParameters(double const& a, double const& b, double const& s)
-	{
-		alpha = a;
-		beta = b;
-		sigma = s;
-	}
-
-	void Vasicek::setMrktArray(std::array<double, 9> const& mrktData)
-	{
-		crrntMonthMrktData = mrktData;
-	}
-
-	const double& Vasicek::getError() const
-	{
-		return error;
-	}
-
-	const double& Vasicek::getNewR() const
-	{
-		return rNext;
-	}
+	// void Vasicek::setParameters(double const& a, double const& b, double const& s)
+	// {
+	// 	alpha = a;
+	// 	beta = b;
+	// 	sigma = s;
+	// }
+	//
+	// void Vasicek::setMrktArray(std::array<double, 9> const& mrktData)
+	// {
+	// 	crrntMonthMrktData = mrktData;
+	// }
+	//
+	// const double& Vasicek::getError() const
+	// {
+	// 	return error;
+	// }
+	//
+	// const double& Vasicek::getNewR() const
+	// {
+	// 	return rNext;
+	// }
 
 
 } // namespace Calibration

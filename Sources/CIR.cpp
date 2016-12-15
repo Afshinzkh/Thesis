@@ -1,9 +1,10 @@
+
 #include "../Headers/CIR.h"
 
 namespace Calibration {
 
 
-double inf = std::numeric_limits<double>::infinity();
+// double inf = std::numeric_limits<double>::infinity();
 
 void CIR::run()
 {
@@ -75,7 +76,7 @@ void CIR::run()
 		for(auto& num: delta_r)
 		{
 		 delta_r[index] = alpha * (beta - r0) * deltaT + sigma
-		  				* std::sqrt(deltaT) * std::sqrt(deltaT) * randomArray[index];
+		  				* std::sqrt(deltaT) * std::sqrt(r0) * randomArray[index];
 		 ++index;
 		 rSum += delta_r[index];
 	 }
@@ -102,8 +103,8 @@ void CIR::run()
 
 		yield = (1.0/tau)*(B * rNext - std::log(A));
 
-		if(yield == inf)	yield = 10;
-		if(yield == -inf) yield = -10;
+		if(yield == std::numeric_limits<double>::infinity())	yield = 10;
+		if(yield == -std::numeric_limits<double>::infinity()) yield = -10;
 
 		return yield;
 	} //CIR::getYield
@@ -112,33 +113,33 @@ void CIR::run()
 /****************************************************************************/
 /******************** Setters and Getters are here **************************/
 /****************************************************************************/
-	CIR::CIR(double const& rZero, std::array<double, 9> const& T)
-	{
-		r0 = rZero;
-		tau = T;
-	}
+	// CIR::CIR(double const& rZero, std::array<double, 9> const& T)
+	// {
+	// 	r0 = rZero;
+	// 	tau = T;
+	// }
 
-	void CIR::setParameters(double const& a, double const& b, double const& s)
-	{
-		alpha = a;
-		beta = b;
-		sigma = s;
-	}
-
-	void CIR::setMrktArray(std::array<double, 9> const& mrktData)
-	{
-		crrntMonthMrktData = mrktData;
-	}
-
-	const double& CIR::getError() const
-	{
-		return error;
-	}
-
-	const double& CIR::getNewR() const
-	{
-		return rNext;
-	}
+	// void CIR::setParameters(double const& a, double const& b, double const& s)
+	// {
+	// 	alpha = a;
+	// 	beta = b;
+	// 	sigma = s;
+	// }
+	//
+	// void CIR::setMrktArray(std::array<double, 9> const& mrktData)
+	// {
+	// 	crrntMonthMrktData = mrktData;
+	// }
+	//
+	// const double& CIR::getError() const
+	// {
+	// 	return error;
+	// }
+	//
+	// const double& CIR::getNewR() const
+	// {
+	// 	return rNext;
+	// }
 
 
 } // namespace Calibration
