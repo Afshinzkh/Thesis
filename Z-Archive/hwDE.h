@@ -10,26 +10,32 @@
 
 namespace Calibration {
 
-  class  DE{
+  class  hwDE{
     public:
-      void runDE();
-      DE(std::string m);
-      const double& getAlpha() const;
-      const double& getBeta() const;
-      const double& getSigma() const;
+      double runDE( double newR);
+      hwDE();
+      const double& getAlpha1() const;
+      const double& getSigma1() const;
+      const double& getAlpha2() const;
+      const double& getSigma2() const;
+      const double& getRho() const;
+
       const double& getError() const;
       const int& getIter() const;
       const double& getTime() const;
       void setMrktArray(std::array<double, 9> const& mrktData);
+      void setMrktGDP(double const& mrktData);
+
       const std::array<double, 9>& getMdlArray() const;
 
     private:
-      std::string methodName;
-      double alpha, beta, sigma, avgError;
+      double alpha1, sigma1, alpha2, sigma2, rho;
+      double avgError, gdpError;
       int loopCount;
       double calTime;
       std::array<double, 9> crrntMonthMrktData;
       std::array<double, 9> crrntMonthMdlData;
+      std::string methodName;
   };
 
 }

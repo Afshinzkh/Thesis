@@ -7,7 +7,7 @@ namespace Calibration
 {
   #define boundaryMIN 0.000001;
 
-  double DE::runDE(double newR)
+  void DE::runDE()
   {
  /****************************************************************************/
  /******************** STEP 1 : Initialize *********************************/
@@ -27,24 +27,13 @@ namespace Calibration
     // for risklab it is 9 : alphaS, betaS, sigmaS, alphaY, betaY, sigmaY,
     // sigmaZ, bY, bZ
     int mpCount = 3;
-    // if (methodName == "risklab")  mpCount = 9;
-    // std::array< std::array <double, mpCount> , NP > P;
     std::vector < std::vector <double> > P(NP,std::vector<double> (mpCount,0));
-
-    // TODO: right now NP and mpcount cannot be private variables because they
-    // are defining the array and the array cannot get non const
-    // this will be fixed later that we do vectorization and shit
 
     // Define the Random Generator here
     // to get random values for model Parameters e.g. alpha, beta, sigma
     // Upper and Lower bounds for them are also defined here
     std::array<double, 3> upperBound = {0.25, 0.05, 0.005};
     std::array<double, 3> lowerBound = {0.0, 0.00001, 0.00001};
-
-    // Pick Random Variables for model parameters
-    // P[i][0] = a random double value for alpha with restrictions 0<alpha<12
-    // P[i][1] = a random double value for beta with restrictions beta in R
-    // P[i][2] = a random double value for sigma with restrictions 0<sigma
 
     // Define the Random Device
     std::random_device rd;
@@ -64,26 +53,25 @@ namespace Calibration
     }
 
     // Define Tolerance for Error
-    double tol = 0.0000008;
+    double tol = 0.00000001;
     avgError = 1.0;
+    double lastAvgError = 2.0;
     int maxIter = 50;
     int iter = 0;
     loopCount = 0;
 
 
     std::array<double,9> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
-    // newR would be the return value for the newR in main.cpp
-    // at first loop in main.cpp it is r0 and then it gets its value from rNext
-    // auto v = new Vasicek(newR, tau);
-    newR = crrntMonthMrktData[0] / 3.0;
-    std::cout << "R0 is: " << newR<< '\n';
+
+    // Generate the best possible r0
+    int rLog = std::floor(std::log10(crrntMonthMrktData[0]));
+    double reducer = std::pow(10,rLog);
+    double newR = crrntMonthMrktData[0] - reducer;
+    std::cout << "R0 is: " << newR << '\n';
+
     auto v = new Vasicek(newR, tau);
-    // auto v = new Vasicek(newR , tau);
     if (methodName == "cir")
         auto v = new CIR(newR, tau);
-    //  else
-
-    // auto    v = new Vasicek(newR, tau);
 
 /****************************************************************************/
 /******************** STEP 2 : DE LOOP **************************************/
@@ -94,7 +82,6 @@ namespace Calibration
     {
         // Calculate the Vasicek/risklab Error for each of these populations
         // input alpha, beta, sigma; output : error;
-        // double pBest[3] = {P[0][0], P[0][1], P[0][2]}
         double sum = 0.0;
         for(int i = 0; i < NP; i++)
 
@@ -110,20 +97,16 @@ namespace Calibration
         // compute the average Error
         avgError = sum/NP;
         loopCount++;
-        if(avgError < tol)  break;
 
-        //   std::cout << " * " << std::flush;
-        // if (loopCount % 10 == 0 )
-        //    std::cout << std::endl;
         std::cout << "Average Error for Calculation loop :" << loopCount;
         std::cout << "\t is : " << avgError << std::endl;
-
+        if(std::abs(avgError -lastAvgError) < tol)    break;
+        lastAvgError = avgError;
   /****************************************************************************/
   /******************** STEP 3 : Mutation *************************************/
   /****************************************************************************/
         // Do the Mutation Stage as follows
         // define a mutated population as mutP
-        // std::array< std::array <long double, mpCount> , NP > mutP;
         std::vector < std::vector <double> > mutP(NP,std::vector<double> (mpCount,0));
         // Define the Random Generator here
         // to get random values for model Parameters e.g. alpha, beta, sigma
@@ -164,13 +147,12 @@ namespace Calibration
   /****************************************************************************/
         // Crossover the mutated with the origital Poupation
         // define a Crossover Population as crP
-        // std::array< std::array <long double, mpCount> , NP > crP;
         std::vector < std::vector <double> > crP(NP,std::vector<double> (mpCount,0));
         // Define the random Distribution U(0,1)
         std::uniform_real_distribution<> crRands(0,1);
         // Define random intex for model parameter count
         std::uniform_int_distribution<> mpRand(0,mpCount-1);
-        // choose each model Parameter  as follows
+
         for (int i = 0; i < NP; i++)
         {
             for (int j = 0; j < mpCount; j++)
@@ -190,7 +172,6 @@ namespace Calibration
             v->nextRate();
             v->run();
             crError[i] = v->getError();
-            // crError[i] = v->run(crP[i][0], crP[i][1], crP[i][2], crrntMonthMrktData);
         }
         // Now you can compare the Error and if the error of one crossover population
         // is less than the error of one original population you copy that
@@ -207,6 +188,7 @@ namespace Calibration
         iter++;
 
     }// end of while loop
+
     double finError = pError[0];
     int smallestIndex;
     for(int i = 1; i < NP; i++)
@@ -221,20 +203,6 @@ namespace Calibration
     alpha = P[smallestIndex][0];
     beta = P[smallestIndex][1];
     sigma = P[smallestIndex][2];
-    // Print out the final Values and also add them to the main arrays
-    // double finAlpha = 0.0;
-    // double finBeta = 0.0;
-    // double finSigma = 0.0;
-    // for(int i = 0; i < NP; i++)
-    // {
-    //   finAlpha += P[i][0];
-    //   finBeta += P[i][1];
-    //   finSigma += P[i][2];
-    // }
-    // // Copy them to private values
-    // alpha = finAlpha/NP;
-    // beta = finBeta/NP;
-    // sigma = finSigma/NP;
 
   /****************************************************************************/
   /***************** STEP 4 : Final Calculation *******************************/
@@ -242,8 +210,8 @@ namespace Calibration
     //get the final values with final parameters
     v->setParameters(alpha, beta, sigma);
     v->nextRate();
-    newR = v->getNewR();
-    // std::cout << "newR is : " << newR << '\n';
+    newR = v->getNewR(); //TODO: output an array with this
+
     for (size_t i = 0; i < 9; i++) {
       crrntMonthMdlData[i] = v->getYield(tau[i]);
     }
@@ -252,6 +220,7 @@ namespace Calibration
     auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> durationCount = end - start;
     calTime = durationCount.count();
+
   /****************************************************************************/
 	/*************************** STEP 4 : Print Out *****************************/
 	/****************************************************************************/
@@ -261,12 +230,12 @@ namespace Calibration
       std::cout << "final sigma:" << sigma <<std::endl;
       std::cout << "Average Error for loop :" << loopCount;
       std::cout << "\t is : " << avgError << std::endl;
+      std::cout << "Calculation Time :" << calTime << std::endl;
 
       for (size_t j = 0; j < 9; j++) {
         std::cout << "y for maturity: "  << tau[j] << "\t is: \t" << crrntMonthMdlData[j] << std::endl;
       }
 
-      return newR;
   }// DE::runDE
 
 /****************************************************************************/

@@ -1,0 +1,4 @@
+Cuda notes:
+
+- kernel functions run on device, so function variables must be pointers and point to device memory.
+- 

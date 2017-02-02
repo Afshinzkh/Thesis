@@ -9,10 +9,6 @@ void Vasicek::run()
 {
 
 		const int maturityCount = 9;
-		// Initialize 3 random values for mean reversion rate :	alpha
-		// long term mean :		beta
-		// volatility : 			sigma
-	 // Values are Taken from DE algorithm
 
 	 /****************************************************************************/
 	 /******************** STEP 1 : Get next Rate ********************************/
@@ -54,7 +50,6 @@ void Vasicek::run()
 		// and then we calculate 10000 delta_r using vasicek short rate model
 		// we average the delta_r and add it to rZero
 		// this would be our next short rate or rNext
-		// Note: rZero evolves for each month, it is being taken from de.cpp
 
 		double deltaT = 1.0/12.0;
 		const int scenarioCount = 10000;
@@ -69,7 +64,6 @@ void Vasicek::run()
 				randomArray[i] = d(gen);
 		}
 
-		// make delta_r with one step deltaT = 1/12;
 		int index = 0;
 		double rSum = 0.0;
 		for(auto& num: delta_r)
@@ -89,10 +83,6 @@ void Vasicek::run()
 		double yield;
 		double A,B,bondPrice;
 
-		// TODO: The formulations for A and B are taken from "Options, feauters
-		// and other derivatives" book. "A" some times is so small that it becomes zero
-		// that's why it might lead to a infinity yield value.
-
 		B = (1.0-std::exp(-alpha*tau))/alpha;
 		A = std::exp(((B - tau)*(std::pow(alpha,2)*beta - 0.5*std::pow(sigma,2))\
 		/std::pow(alpha,2)) - (std::pow(sigma,2)*std::pow(B,2)/(4*alpha)));
@@ -107,38 +97,6 @@ void Vasicek::run()
 
 		return yield;
 	} //Vasicek::getYield
-
-
-/****************************************************************************/
-/******************** Setters and Getters are here **************************/
-/****************************************************************************/
-	// Vasicek::Vasicek(double const& rZero, std::array<double, 9> const& T)
-	// {
-	// 	r0 = rZero;
-	// 	tau = T;
-	// }
-
-	// void Vasicek::setParameters(double const& a, double const& b, double const& s)
-	// {
-	// 	alpha = a;
-	// 	beta = b;
-	// 	sigma = s;
-	// }
-	//
-	// void Vasicek::setMrktArray(std::array<double, 9> const& mrktData)
-	// {
-	// 	crrntMonthMrktData = mrktData;
-	// }
-	//
-	// const double& Vasicek::getError() const
-	// {
-	// 	return error;
-	// }
-	//
-	// const double& Vasicek::getNewR() const
-	// {
-	// 	return rNext;
-	// }
 
 
 } // namespace Calibration

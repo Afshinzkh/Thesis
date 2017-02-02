@@ -21,12 +21,8 @@ int main(int argc, char* argv[])
   /****************************************************************************/
   /******************** STEP 1 : Initialize variables *************************/
   /****************************************************************************/
-  // TODO: for now time-series length is 12 since we wanna get the values
-  // for 12 months and maturity is 9 according to our data
-  // Maturity [0.25, 1, 3, 5, 7, 10, 15, 20, 30]
   const int maturityCount = 9;
-  // Jan 2015 bis Dec. 2015
-  const int seriesCount = 12;
+  const int seriesCount = 144;
 
   // Define time to maturity
   std::array<double,maturityCount> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
@@ -42,6 +38,7 @@ int main(int argc, char* argv[])
   // Define the array that stores the final mdlData
   std::array< std::array< double, maturityCount>, seriesCount> mdlData;
 
+
   /****************************************************************************/
 	/******************** STEP 2 : Read the Data ********************************/
 	/****************************************************************************/
@@ -53,13 +50,11 @@ int main(int argc, char* argv[])
 
   // TODO: think of reading the data without knowing the row size
     std::array<std::array<double,maturityCount>, seriesCount> mrktData;
-  // An array of [1 * maturityCount] that holds only the current month values
     std::array<double,maturityCount> crrntMonthMrktData;
 
   // get the first argument of main as file name
   readData(argv[1], mrktData);
 
-  double r0 = 0.0018;
   /****************************************************************************/
 	/*************************** STEP 2 : Run DE ********************************/
 	/****************************************************************************/
@@ -70,16 +65,8 @@ int main(int argc, char* argv[])
   // define the Differential Evolution object
   DE d(method);
 
-  // This is just for current beauty
-  std::array <std::string, seriesCount> monthNames = {
-    "Jan.2015", "Feb.2015", "Mar.2015", "Apr.2015", "May.2015",
-    "Jun.2015", "Jul.2015", "Aug.2015", "Sep.2015", "Oct.2015",
-    "Nov.2015", "Dec.2015"
-  };
 
-  // this varibale the the next shortRate which is taken from last monthNames
-  // at first it is r0 and then it gets updated for each month
-  double newR = r0;
+  auto start = std::chrono::steady_clock::now();
 
   // Call the Differential Evolution Function
   // for each time-serie
@@ -87,9 +74,9 @@ int main(int argc, char* argv[])
   {
     crrntMonthMrktData = mrktData[seriesCount-1-i];
     std::cout << "=============================" << std::endl;
-    std::cout << "Running DE for :" << monthNames[i] << std::endl;
+    std::cout << "Running DE for Series number:" << i << std::endl;
     d.setMrktArray(crrntMonthMrktData);
-    newR = d.runDE(newR);
+    d.runDE();
     alphaArray[i] = d.getAlpha();
     betaArray[i] = d.getBeta();
     sigmaArray[i] = d.getSigma();
@@ -98,6 +85,10 @@ int main(int argc, char* argv[])
     iterArray[i] = d.getIter();
     timeArray[i] = d.getTime();
   }
+
+  auto end = std::chrono::steady_clock::now();
+  std::chrono::duration<double> durationCount = end - start;
+  double totalTime = durationCount.count();
 
   /****************************************************************************/
 	/*************************** STEP 4 : Print Out *****************************/
@@ -108,7 +99,7 @@ int main(int argc, char* argv[])
     std::cout << "\nfinal alpha:" <<  alphaArray[i] <<std::endl;
     std::cout << "final beta:" << betaArray[i] <<std::endl;
     std::cout << "final sigma:" << sigmaArray[i] <<std::endl;
-    std::cout << "Average Error for month :" << monthNames[i];
+    std::cout << "Average Error for month :" << i;
     std::cout << "\t is : " << errorArray[i] << std::endl;
     std::cout << "Elapsed Time: " << timeArray[i] << std::endl;
     std::cout << "Number of Iterations: " << iterArray[i] << std::endl;
@@ -117,9 +108,12 @@ int main(int argc, char* argv[])
     }
   }
 
+  method = method + "CPU" + std::to_string(seriesCount);
   writeData(mdlData, mrktData, alphaArray, betaArray, sigmaArray,
           errorArray, iterArray, timeArray,method);
 
+          std::cout << "Data has been written to file" << std::endl;
+          std::cout << "Total Calculation Time is: " << totalTime << std::endl;
 
   return 0;
 }

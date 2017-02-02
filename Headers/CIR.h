@@ -12,13 +12,13 @@
 namespace Calibration {
 
 
-  class Vasicek : public Method{
+  class CIR : public Method{
     public:
       virtual void run();
       virtual void nextRate();
       virtual double getYield(double const& tau);
 
-      Vasicek(double const& rZero, std::array<double, 9> const& T ) : Method(rZero, T) {}
+      CIR(double const& rZero, std::array<double, 9> const& T ) : Method(rZero, T) {}
   };
 
 }

@@ -10,10 +10,6 @@ void CIR::run()
 {
 
 		const int maturityCount = 9;
-		// Initialize 3 random values for mean reversion rate :	alpha
-		// long term mean :		beta
-		// volatility : 			sigma
-	 // Values are Taken from DE algorithm
 
 	 /****************************************************************************/
 	 /******************** STEP 1 : Get next Rate ********************************/
@@ -55,7 +51,6 @@ void CIR::run()
 		// and then we calculate 10000 delta_r using vasicek short rate model
 		// we average the delta_r and add it to rZero
 		// this would be our next short rate or rNext
-		// Note: rZero evolves for each month, it is being taken from de.cpp
 
 		double deltaT = 1.0/12.0;
 		const int scenarioCount = 10000;
@@ -70,7 +65,6 @@ void CIR::run()
 				randomArray[i] = d(gen);
 		}
 
-		// make delta_r with one step deltaT = 1/12;
 		int index = 0;
 		double rSum = 0.0;
 		for(auto& num: delta_r)
@@ -108,38 +102,6 @@ void CIR::run()
 
 		return yield;
 	} //CIR::getYield
-
-
-/****************************************************************************/
-/******************** Setters and Getters are here **************************/
-/****************************************************************************/
-	// CIR::CIR(double const& rZero, std::array<double, 9> const& T)
-	// {
-	// 	r0 = rZero;
-	// 	tau = T;
-	// }
-
-	// void CIR::setParameters(double const& a, double const& b, double const& s)
-	// {
-	// 	alpha = a;
-	// 	beta = b;
-	// 	sigma = s;
-	// }
-	//
-	// void CIR::setMrktArray(std::array<double, 9> const& mrktData)
-	// {
-	// 	crrntMonthMrktData = mrktData;
-	// }
-	//
-	// const double& CIR::getError() const
-	// {
-	// 	return error;
-	// }
-	//
-	// const double& CIR::getNewR() const
-	// {
-	// 	return rNext;
-	// }
 
 
 } // namespace Calibration
