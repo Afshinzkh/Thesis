@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   /******************** STEP 1 : Initialize variables *************************/
   /****************************************************************************/
   const int maturityCount = 9;
-  const int seriesCount = 144;
+  const int seriesCount = 12;
 
   // Define time to maturity
   std::array<double,maturityCount> tau = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  method = method + "CPU" + std::to_string(seriesCount);
+  method = "Total" + method + "CPU" + std::to_string(seriesCount);
   writeData(mdlData, mrktData, alphaArray, betaArray, sigmaArray,
           errorArray, iterArray, timeArray,method);
 

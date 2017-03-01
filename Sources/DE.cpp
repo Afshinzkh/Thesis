@@ -17,10 +17,24 @@ namespace Calibration
   	//                                      CR  : Crossover Ratio [0,1]
 
 
-    const int NP = 80;
-    double F = 0.7;
-    double CR = 0.5;
+    // const int NP = 80;
+    // double F = 0.7;
+    // double CR = 0.5;
 
+    int NP;
+    double F,CR;
+    if (methodName == "cir")
+    {
+      NP = 55;
+      CR = 0.6;
+      F = 0.5;
+    }
+    else
+    {
+      NP = 70;
+      CR = 0.85;
+      F = 0.6;
+    }
     // Creat a population matrix P with the size of [NP * mpCount]
     // where mpCount is the count of Model Parameters;
     // for vasicek it is 3 for alpha, beta and sigma
@@ -56,7 +70,7 @@ namespace Calibration
     double tol = 0.00000001;
     avgError = 1.0;
     double lastAvgError = 2.0;
-    int maxIter = 50;
+    int maxIter = 70;
     int iter = 0;
     loopCount = 0;
 
@@ -190,7 +204,7 @@ namespace Calibration
     }// end of while loop
 
     double finError = pError[0];
-    int smallestIndex;
+    int smallestIndex = 0;
     for(int i = 1; i < NP; i++)
     {
       if(pError[i]<finError)
